@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,162 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                  String              @id @default(cuid())
+  name                                String?
+  email                               String              @unique
+  emailVerified                       DateTime?
+  image                               String?
+  tipo                                TipoUsuario?
+  createdAt                           DateTime            @default(now())
+  updatedAt                           DateTime            @updatedAt
+  accounts                            Account[]
+  Avaliacao                           Avaliacao[]
+  Devolutiva_Devolutiva_alunoIdToUser Devolutiva[]
+  ProgressoWorkshop                   ProgressoWorkshop[]
+  sessions                            Session[]
+
+  AvaliacaoWorkshop AvaliacaoWorkshop[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  ext_expires_in    Int?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Formacao {
+  id           String        @id @default(uuid())
+  nome         String        @unique @db.VarChar(255)
+  done         Boolean       @default(false)
+  capacitacoes Capacitacao[]
+}
+
+model Capacitacao {
+  id         String     @id @default(uuid())
+  nome       String     @db.VarChar(255)
+  link_video String?
+  formacaoId String
+  done       Boolean    @default(false)
+  formacao   Formacao   @relation(fields: [formacaoId], references: [id], onDelete: Cascade)
+  workshops  Workshop[]
+}
+
+model Workshop {
+  id                String              @id @default(uuid())
+  nome              String              @db.VarChar(255)
+  capacitacaoId     String
+  link_video        String?
+  devolutivas       Devolutiva[]
+  progressoWorkshop ProgressoWorkshop[]
+  capacitacao       Capacitacao         @relation(fields: [capacitacaoId], references: [id], onDelete: Cascade)
+
+  AvaliacaoWorkshop AvaliacaoWorkshop[]
+}
+
+model Devolutiva {
+  id            String           @id @default(uuid())
+  workshopId    String
+  alunoId       String
+  tipo          TipoDevolutiva
+  arquivo_url   String
+  status        StatusDevolutiva @default(Enviado)
+  duracao_video Int?
+  avaliacao     Avaliacao[]
+  aluno         User             @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  workshop      Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+}
+
+
+
+model Avaliacao {
+  id           String     @id @default(uuid())
+  devolutivaId String
+  avaliadorId  String
+  nota         Decimal    @db.Decimal(3, 1)
+  comentario   String?
+  avaliador    User       @relation(fields: [avaliadorId], references: [id], onDelete: Cascade)
+  devolutiva   Devolutiva @relation(fields: [devolutivaId], references: [id], onDelete: Cascade)
+}
+
+model ProgressoWorkshop {
+  id         String   @id @default(uuid())
+  usuarioId  String
+  workshopId String
+  done       Boolean  @default(false)
+  truedone   Boolean  @default(false) // Novo campo
+  startedAt  DateTime? // Novo campo
+  doneAt     DateTime? // Novo campo
+  truedoneAt DateTime? // Novo campo
+  usuario    User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, workshopId])
+}
+
+model AvaliacaoWorkshop {
+  id         String   @id @default(uuid())
+  usuarioId  String
+  workshopId String
+  rating     Int      @default(0) // Armazena valores de 0 a 5
+  feedback   String?  // Campo opcional de texto
+  usuario    User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  // Garante que cada usuário só tenha uma avaliação por workshop
+  @@unique([usuarioId, workshopId])
+}
+
+
+enum TipoUsuario {
+  Aluno
+  Avaliador
+  Administrador
+  Instrutor
+}
+
+enum TipoDevolutiva {
+  PDF
+  PPTX
+  VIDEO
+}
+
+enum StatusDevolutiva {
+  Enviado
+  Aguardando
+  Aprovado
+  Revisão
 }
