@@ -1,7 +1,8 @@
 "use server";
 
-import { db } from "@/lib/prisma";
 import { TipoUsuario } from "@prisma/client";
+
+import { db } from "@/lib/prisma";
 
 interface UpdateCategoryProps {
   userId: string;

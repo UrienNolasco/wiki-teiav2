@@ -51,12 +51,12 @@ const menuItems = [
   },
   {
     title: "Dashboard de Progresso",
-    url: "/progresso",
+    url: "/dashboard",
     icon: BarChart2,
   },
   {
     title: "Gerenciamento de Funções",
-    url: "/configuracoes",
+    url: "/gerenciamento",
     icon: Settings,
   },
   {

@@ -1,5 +1,5 @@
+import { CloudUpload,Eye, School } from "lucide-react";
 import Image from "next/image";
-import { School, Eye, CloudUpload } from "lucide-react";
 
 const Recursos = () => {
   return (

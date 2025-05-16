@@ -1,6 +1,6 @@
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 
-import Image from "next/image";
 import { Button } from "../ui/button";
 
 const Hero = () => {

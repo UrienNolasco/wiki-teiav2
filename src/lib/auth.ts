@@ -1,7 +1,8 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { AuthOptions } from "next-auth";
-import { db } from "./prisma";
 import AzureADProvider from "next-auth/providers/azure-ad";
+
+import { db } from "./prisma";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(db),
