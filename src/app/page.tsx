@@ -1,7 +1,7 @@
 import { BarChart2, BookOpen,  FileText } from "lucide-react";
 
-import { ContinueWatching } from "@/components/home/continuewatching";
-import { QuickAcessCard } from "@/components/home/quickacesscard";
+import { ContinueWatching } from "@/components/homepage/continuewatching";
+import { QuickAcessCard } from "@/components/homepage/quickacesscard";
 import SearchBar from "@/components/searchbar";
 
 

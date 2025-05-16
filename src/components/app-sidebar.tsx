@@ -1,5 +1,6 @@
 "use client";
 
+import { AvatarImage } from "@radix-ui/react-avatar";
 import {
   BarChart2,
   BookOpen,
@@ -10,12 +11,11 @@ import {
   LogOut,
   Search,
   Settings,
-  User,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import React from "react";
-import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+
+import { Avatar } from "./ui/avatar";
 
 const menuItems = [
   {
@@ -65,12 +67,8 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
+  const data = useSession();
   const pathname = usePathname();
-
-  const handleLogout = () => {
-    toast.success("Logout realizado com sucesso!");
-    // This would typically handle actual logout functionality
-  };
 
   return (
     <Sidebar className="border-r border-border bg-white dark:bg-gray-950">
@@ -87,29 +85,22 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {menuItems.map((item) => {
-                  const isActive =
-                    pathname === item.url ||
+                  const isActive = pathname === item.url || 
                     (item.url !== "/" && pathname.startsWith(item.url));
-
+                  
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
+                      <SidebarMenuButton 
                         asChild
                         className={cn(
                           "flex items-center justify-between",
-                          isActive &&
-                            "bg-purple-100 text-purple-700 font-medium"
+                          isActive && "bg-purple-100 text-purple-700 font-medium"
                         )}
                       >
-                        <Link
-                          href={item.url}
-                          className="flex items-center w-full"
-                        >
-                          <item.icon className="mr-3 h-4 w-4" />
-                          <span className="flex-1">{item.title}</span>
-                          {isActive && (
-                            <ChevronRight className="ml-auto h-4 w-4" />
-                          )}
+                        <Link href={item.url} className="flex items-center w-full">
+                          <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                          <span className="flex-1 truncate">{item.title}</span>
+                          {isActive && <ChevronRight className="ml-auto h-4 w-4 flex-shrink-0" />}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -126,16 +117,16 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <Link href="/devolutivas" className="flex items-center">
-                      <FileText className="mr-3 h-4 w-4" />
-                      <span className="flex-1">Devolutivas</span>
+                      <FileText className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 truncate">Devolutivas</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <Link href="/busca" className="flex items-center">
-                      <Search className="mr-3 h-4 w-4" />
-                      <span className="flex-1">Busca Avançada</span>
+                      <Search className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 truncate">Busca Avançada</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -147,31 +138,30 @@ export function AppSidebar() {
         <div className="mt-auto p-3 border-t">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-start p-2 h-auto"
-              >
+              <Button variant="ghost" className="w-full justify-start p-2 h-auto">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center">
-                    <User className="h-4 w-4 text-slate-600" />
-                  </div>
+                    <Avatar className="h-9 w-9">
+                    <AvatarImage className="object-fill"
+                    src={data.data?.user.image ?? ""}
+                    alt={data.data?.user.name ?? "User"}
+                  />
+                    </Avatar>
                   <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">Usuário</span>
-                    <span className="text-xs text-muted-foreground">
-                      user@example.com
-                    </span>
+                    <span className="text-sm font-medium">{data.data?.user.name}</span>
+                    <span className="text-xs text-muted-foreground">{data.data?.user.email}</span>
                   </div>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="cursor-pointer"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                signOut();
+              }}
+            >
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

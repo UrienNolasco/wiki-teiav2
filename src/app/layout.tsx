@@ -7,7 +7,6 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 
 import AuthProvider from "./providers/auth";
 
-
 export const metadata: Metadata = {
   title: "Wiki Teia",
   description: "Wiki teia",
@@ -21,14 +20,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
-            <AppSidebar />
-            <main className="flex-1 overflow-y-auto p-6">
-              <AuthProvider>{children}</AuthProvider>
-            </main>
-          </div>
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+              <AppSidebar />
+              <main className="flex-1 overflow-y-auto p-6">
+                {children}
+              </main>
+            </div>
+          </SidebarProvider>
+        </AuthProvider>
       </body>
     </html>
   );
