@@ -1,4 +1,5 @@
 "use client"
+
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronRight, FileCheck, FileText, Folder,FolderOpen, Upload } from 'lucide-react';
 import React, { useState } from 'react';
@@ -287,7 +288,7 @@ const Devolutivas = () => {
                                   {currentStatus.status === 'agendada' && (
                                     <div className="flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">
                                       <CalendarIcon className="h-3 w-3 mr-1" />
-                                      <span>Devolutiva agendada para {format(currentStatus.data!, 'dd/MM/yyyy')}</span>
+                                      <span>Devolutiva agendada para {format(new Date(currentStatus.data!), 'dd/MM/yyyy')}</span>
                                     </div>
                                   )}
                                   

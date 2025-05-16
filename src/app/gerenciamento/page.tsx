@@ -104,7 +104,7 @@ const Gerenciamento: React.FC = () => {
   return (
     <div className="container mx-auto animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Gerenciamento de Funções</h1>
+        <h1 className="text-3xl font-bold">Gerenciamento de Funções</h1>
         <p className="text-muted-foreground">
           Configure as funções dos usuários na plataforma
         </p>

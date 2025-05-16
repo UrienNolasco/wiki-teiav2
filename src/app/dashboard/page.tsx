@@ -100,7 +100,7 @@ const Progresso = () => {
   return (
       <div className="container mx-auto animate-fade-in">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard de Progresso</h1>
+          <h1 className="text-3xl font-bold">Dashboard de Progresso</h1>
           <p className="text-muted-foreground">Acompanhe o progresso dos usuários nas capacitações</p>
         </div>
 
