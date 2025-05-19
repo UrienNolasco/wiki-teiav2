@@ -1,9 +1,10 @@
 "use client";
 
 import { Edit, PlusCircle, Trash2 } from "lucide-react";
-import React, { useEffect,useState } from "react";
+import React, { useEffect,useMemo,useState } from "react";
 import { toast } from "react-toastify";
 
+import { FilterBar } from "@/components/filterbar";
 import { DeleteConfirmationDialog } from "@/components/lib-manegement/delete-confirmdialog";
 // Importe o serviço de capacitação
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,9 @@ const LibManegement = () => {
     capacitacoes: [],
     workshops: [],
   });
+  const [searchValue, setSearchValue] = useState("");
+
+
 
   const [newFormacao, setNewFormacao] = useState("");
   const [newCapacitacao, setNewCapacitacao] = useState({
@@ -144,6 +148,24 @@ const LibManegement = () => {
       setActiveTab(value);
     }
   };
+
+  const filteredFormacoes = useMemo(() => {
+    return data.formacoes.filter((formacao) =>
+      formacao.nome.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [data.formacoes, searchValue]);
+
+  const filteredCapacitacoes = useMemo(() => {
+    return data.capacitacoes.filter((capacitacao) =>
+      capacitacao.nome.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [data.capacitacoes, searchValue]);
+
+  const filteredWorkshops = useMemo(() => {
+    return data.workshops.filter((workshop) =>
+      workshop.nome.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [data.workshops, searchValue]);
 
   // Fetch inicial
   async function fetchData() {
@@ -318,8 +340,15 @@ const LibManegement = () => {
         <TabsContent value="formacoes" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Formações</h2>
+            <div>
+              <FilterBar 
+                  searchValue={searchValue}
+                  onSearchChange={setSearchValue}
+                  searchPlaceholder="Buscar formação..."
+              />
+            </div>
             <Dialog>
-              <DialogTrigger asChild>
+              <DialogTrigger asChild> 
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" /> Nova Formação
                 </Button>
@@ -356,7 +385,7 @@ const LibManegement = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.formacoes.map((f) => (
+            {filteredFormacoes.map((f) => (
               <Card key={f.id} className="shadow-md">
                 <CardHeader>
                   <CardTitle>{f.nome}</CardTitle>
@@ -425,6 +454,13 @@ const LibManegement = () => {
         <TabsContent value="capacitacoes" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Capacitações</h2>
+            <div>
+              <FilterBar 
+                  searchValue={searchValue}
+                  onSearchChange={setSearchValue}
+                  searchPlaceholder="Buscar capacitação..."
+              />
+            </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button>
@@ -507,7 +543,7 @@ const LibManegement = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.capacitacoes.map((c) => {
+            {filteredCapacitacoes.map((c) => {
               const f = getFormacaoById(c.formacaoId);
               const countW = data.workshops.filter(
                 (w) => w.capacitacaoId === c.id
@@ -625,6 +661,13 @@ const LibManegement = () => {
         <TabsContent value="workshops" className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Workshops</h2>
+            <div>
+              <FilterBar 
+                  searchValue={searchValue}
+                  onSearchChange={setSearchValue}
+                  searchPlaceholder="Buscar workshop..."
+              />
+            </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button>
@@ -708,7 +751,7 @@ const LibManegement = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.workshops.map((w) => {
+            {filteredWorkshops.map((w) => {
               const c = getCapacitacaoById(w.capacitacaoId);
               const f = c ? getFormacaoById(c.formacaoId) : null;
               return (
