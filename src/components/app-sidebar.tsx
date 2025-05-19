@@ -61,7 +61,7 @@ const menuItems = [
   },
   {
     title: "Gerenciar Conteúdos",
-    url: "/biblioteca-crud",
+    url: "/lib-manegement",
     icon: Edit,
   },
 ];
@@ -74,10 +74,10 @@ export function AppSidebar() {
     <Sidebar className="border-r border-border bg-white dark:bg-gray-950">
       <div className="py-4 px-3 flex flex-col h-full">
         <div className="flex items-center gap-2 mb-8 px-3">
-          <div className="h-8 w-8 rounded-full bg-purple-gradient flex items-center justify-center text-white font-bold">
-            W
-          </div>
-          <span className="text-lg font-semibold">Workshop Manager</span>
+          <Avatar>
+            <AvatarImage src="/teia-logo-512.jpg"/>
+          </Avatar>
+          <span className="text-lg font-semibold" style={{ fontFamily: "Tan Mon Cheri" }}>WikiTeia</span>
         </div>
         <SidebarContent>
           <SidebarGroup>

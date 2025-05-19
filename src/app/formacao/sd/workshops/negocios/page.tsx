@@ -13,7 +13,7 @@ const Workshops = async () => {
   const workshops = await db.workshop.findMany({
     where: {
       capacitacao: {
-        nome: "Capacitação ABAP",
+        nome: "Capacitação de Negócios",
       },
     },
     include: {
@@ -38,7 +38,7 @@ const Workshops = async () => {
       <div className="container mx-auto animate-fade-in">
           <div className="max-w-7xl mx-auto space-y-8">
             <h1 className="text-3xl font-bold text-gray-900">
-              Capacitação ABAP
+              Capacitação de Negócios
             </h1>
             <div className="space-y-6">
               {workshopsComProgresso.map((workshop) => (
