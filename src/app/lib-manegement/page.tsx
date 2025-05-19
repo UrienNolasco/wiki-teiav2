@@ -4,6 +4,7 @@ import { Edit, PlusCircle, Trash2 } from "lucide-react";
 import React, { useEffect,useState } from "react";
 import { toast } from "react-toastify";
 
+import { DeleteConfirmationDialog } from "@/components/lib-manegement/delete-confirmdialog";
 // Importe o serviço de capacitação
 import { Button } from "@/components/ui/button";
 import {
@@ -34,11 +35,18 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { addCapacitacao } from "../actions/capacitacao/addcapacitacao";
+import { deleteCapacitacao } from "../actions/capacitacao/deletecapacitacao";
 import { getAllCapacitacao } from "../actions/capacitacao/getallcapacitacao";
+import { updateCapacitacao } from "../actions/capacitacao/updatecapacitacao";
+import { addFormacao } from "../actions/formacao/addformacao";
+import { deleteFormacao } from "../actions/formacao/deleteformacao";
 import { getAllFormacao } from "../actions/formacao/getallformacao";
+import { updateFormacao } from "../actions/formacao/updateformacao";
+import { addWorkshop } from "../actions/workshop/addworkshop";
+import { deleteWorkshop } from "../actions/workshop/deleteworkshop";
 import { getAllWorkshop } from "../actions/workshop/getallworkshops";
-
-
+import { updateWorkshop } from "../actions/workshop/updateworkshop";
 
 
 interface Formacao {
@@ -74,8 +82,6 @@ const LibManegement = () => {
     workshops: [],
   });
 
-  const [loading, setLoading] = useState<boolean>(true);
-
   const [newFormacao, setNewFormacao] = useState("");
   const [newCapacitacao, setNewCapacitacao] = useState({
     nome: "",
@@ -101,9 +107,46 @@ const LibManegement = () => {
     "formacoes"
   );
 
+  const [itemToDelete, setItemToDelete] = useState<{
+    type: "formacao" | "capacitacao" | "workshop" | null;
+    id: string | null;
+  }>({ type: null, id: null });
+
+  const handleDelete = async () => {
+    if (!itemToDelete.id) return;
+
+    try {
+      switch (itemToDelete.type) {
+        case "formacao":
+          await deleteOneFormacao(itemToDelete.id);
+          break;
+        case "capacitacao":
+          await deleteOneCapacitacao(itemToDelete.id);
+          break;
+        case "workshop":
+          await deleteOneWorkshop(itemToDelete.id);
+          break;
+      }
+      await fetchData(); // Recarrega os dados
+      toast.success(`${itemToDelete.type} excluído(a) com sucesso!`);
+    } catch (error) {
+      toast.error("Erro ao excluir item");
+      console.error("Erro ao excluir item:", error);
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    if (
+      value === "formacoes" ||
+      value === "capacitacoes" ||
+      value === "workshops"
+    ) {
+      setActiveTab(value);
+    }
+  };
+
   // Fetch inicial
   async function fetchData() {
-    setLoading(true);
     try {
       const [ rawFormacoes, rawCapacitacoes, rawWorkshops ] = await Promise.all([
           getAllFormacao(),
@@ -141,7 +184,6 @@ const LibManegement = () => {
       console.error(err);
       toast.error("Erro ao carregar dados");
     } finally {
-      setLoading(false);
     }
   }
 
@@ -156,20 +198,20 @@ const LibManegement = () => {
     data.capacitacoes.find((c) => c.id === id);
 
   // Handlers de Formação
-  const addFormacao = async () => {
+  const addOneFormacao = async () => {
     if (!newFormacao.trim()) {
       toast.error("Preencha o nome da formação");
       return;
     }
-    await formacaoService.addFormacao({ nome: newFormacao });
+    await addFormacao({ nome: newFormacao });
     setNewFormacao("");
     await fetchData();
     toast.success("Formação criada com sucesso!");
   };
 
-  const updateFormacao = async () => {
+  const updateOneFormacao = async () => {
     if (!editingFormacao) return;
-    await formacaoService.updateFormacao({
+    await updateFormacao({
       id: editingFormacao.id,
       nome: editingFormacao.nome,
     });
@@ -178,19 +220,19 @@ const LibManegement = () => {
     toast.success("Formação atualizada com sucesso!");
   };
 
-  const deleteFormacao = async (id: string) => {
-    await formacaoService.deleteFormacao(id);
+  const deleteOneFormacao = async (id: string) => {
+    await deleteFormacao(id);
     await fetchData();
     toast.success("Formação excluída com sucesso!");
   };
 
   // Handlers de Capacitação
-  const addCapacitacao = async () => {
+  const addOneCapacitacao = async () => {
     if (!newCapacitacao.nome.trim() || !newCapacitacao.formacaoId) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
-    await capacitacaoService.addCapacitacao({
+    await addCapacitacao({
       nome: newCapacitacao.nome,
       formacaoId: newCapacitacao.formacaoId,
     });
@@ -199,9 +241,9 @@ const LibManegement = () => {
     toast.success("Capacitação criada com sucesso!");
   };
 
-  const updateCapacitacao = async () => {
+  const updateOneCapacitacao = async () => {
     if (!editingCapacitacao) return;
-    await capacitacaoService.updateCapacitacao({
+    await updateCapacitacao({
       id: editingCapacitacao.id,
       nome: editingCapacitacao.nome,
       formacaoId: editingCapacitacao.formacaoId,
@@ -211,19 +253,19 @@ const LibManegement = () => {
     toast.success("Capacitação atualizada com sucesso!");
   };
 
-  const deleteCapacitacao = async (id: string) => {
-    await capacitacaoService.deleteCapacitacao(id);
+  const deleteOneCapacitacao = async (id: string) => {
+    await deleteCapacitacao(id);
     await fetchData();
     toast.success("Capacitação excluída com sucesso!");
   };
 
   // Handlers de Workshop
-  const addWorkshop = async () => {
+  const addOneWorkshop = async () => {
     if (!newWorkshop.nome.trim() || !newWorkshop.capacitacaoId) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
-    await workshopService.addWorkshop({
+    await addWorkshop({
       nome: newWorkshop.nome,
       capacitacaoId: newWorkshop.capacitacaoId,
       link_video: newWorkshop.link_video,
@@ -233,9 +275,9 @@ const LibManegement = () => {
     toast.success("Workshop criado com sucesso!");
   };
 
-  const updateWorkshop = async () => {
+  const updateOneWorkshop = async () => {
     if (!editingWorkshop) return;
-    await workshopService.updateWorkshop({
+    await updateWorkshop({
       id: editingWorkshop.id,
       nome: editingWorkshop.nome,
       capacitacaoId: editingWorkshop.capacitacaoId,
@@ -246,18 +288,14 @@ const LibManegement = () => {
     toast.success("Workshop atualizado com sucesso!");
   };
 
-  const deleteWorkshop = async (id: string) => {
-    await workshopService.deleteWorkshop(id);
+  const deleteOneWorkshop = async (id: string) => {
+    await deleteWorkshop(id);
     await fetchData();
     toast.success("Workshop excluído com sucesso!");
   };
 
-  if (loading) {
-    return <div className="p-8">Carregando dados...</div>;
-  }
-
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">
@@ -269,7 +307,7 @@ const LibManegement = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-4">
           <TabsTrigger value="formacoes">Formações</TabsTrigger>
           <TabsTrigger value="capacitacoes">Capacitações</TabsTrigger>
@@ -311,7 +349,7 @@ const LibManegement = () => {
                   >
                     Cancelar
                   </Button>
-                  <Button onClick={addFormacao}>Adicionar</Button>
+                  <Button onClick={addOneFormacao}>Adicionar</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -328,11 +366,15 @@ const LibManegement = () => {
                 </CardHeader>
                 <CardFooter className="flex justify-between">
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Edit className="mr-2 h-4 w-4" /> Editar
-                      </Button>
-                    </DialogTrigger>
+                  <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingFormacao(f)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                      </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Editar Formação</DialogTitle>
@@ -360,7 +402,7 @@ const LibManegement = () => {
                         >
                           Cancelar
                         </Button>
-                        <Button onClick={updateFormacao}>
+                        <Button onClick={updateOneFormacao}>
                           Salvar
                         </Button>
                       </DialogFooter>
@@ -369,9 +411,9 @@ const LibManegement = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteFormacao(f.id)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                    onClick={() => setItemToDelete({ type: "formacao", id: f.id })}
+                    >   
+                      <Trash2 className="mr-2 h-4 w-4" /> Excluir
                   </Button>
                 </CardFooter>
               </Card>
@@ -458,7 +500,7 @@ const LibManegement = () => {
                   >
                     Cancelar
                   </Button>
-                  <Button onClick={addCapacitacao}>Adicionar</Button>
+                  <Button onClick={addOneCapacitacao}>Adicionar</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -486,10 +528,14 @@ const LibManegement = () => {
                   <CardFooter className="flex justify-between">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                      </DialogTrigger>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingCapacitacao(c)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Editar Capacitação</DialogTitle>
@@ -555,7 +601,7 @@ const LibManegement = () => {
                           >
                             Cancelar
                           </Button>
-                          <Button onClick={updateCapacitacao}>
+                          <Button onClick={updateOneCapacitacao}>
                             Salvar
                           </Button>
                         </DialogFooter>
@@ -564,7 +610,7 @@ const LibManegement = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => deleteCapacitacao(c.id)}
+                      onClick={() => setItemToDelete({ type: "capacitacao", id: c.id })}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Excluir
                     </Button>
@@ -655,7 +701,7 @@ const LibManegement = () => {
                   >
                     Cancelar
                   </Button>
-                  <Button onClick={addWorkshop}>Adicionar</Button>
+                  <Button onClick={addOneWorkshop}>Adicionar</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -680,11 +726,15 @@ const LibManegement = () => {
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                      </DialogTrigger>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingWorkshop(w)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" /> Editar
+                      </Button>
+                    </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Editar Workshop</DialogTitle>
@@ -757,7 +807,7 @@ const LibManegement = () => {
                           >
                             Cancelar
                           </Button>
-                          <Button onClick={updateWorkshop}>
+                          <Button onClick={updateOneWorkshop}>
                             Salvar
                           </Button>
                         </DialogFooter>
@@ -766,7 +816,7 @@ const LibManegement = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => deleteWorkshop(w.id)}
+                      onClick={() => setItemToDelete({ type: "workshop", id: w.id })}
                     >
                       <Trash2 className="mr-2 h-4 w-4" /> Excluir
                     </Button>
@@ -777,7 +827,16 @@ const LibManegement = () => {
           </div>
         </TabsContent>
       </Tabs>
+      <DeleteConfirmationDialog
+        open={!!itemToDelete.type}
+        onOpenChange={(open) => {
+          if (!open) setItemToDelete({ type: null, id: null });
+        }}
+        onConfirm={handleDelete}
+        itemType={itemToDelete.type || "item"}
+      />
     </div>
+    
   );
 };
 
