@@ -1,8 +1,8 @@
-import { Search } from "lucide-react";
 import Image from 'next/image';
+import { useMemo, useState } from 'react';
 
+import { FilterBar } from "../filterbar";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Input } from "../ui/input";
 
 interface IUser {
   id: string;
@@ -18,6 +18,16 @@ interface UserListProps {
 }
 
 const UserList = ({ users, onSelect, selectedUserId }: UserListProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  
   return ( 
     <Card>
       <CardHeader>
@@ -25,18 +35,21 @@ const UserList = ({ users, onSelect, selectedUserId }: UserListProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input placeholder="Buscar usuários..." className="pl-10" />
+        <FilterBar
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar usuários..."
+          />
         </div>
 
         <div className="space-y-2 mt-4">
-          {users.map((user) => (
-            <div 
+          {filteredUsers.map((user) => (
+            <div
               key={user.id}
               className={`flex items-center p-3 rounded-md cursor-pointer transition-colors ${
-                selectedUserId === user.id 
-                  ? 'bg-pink-50 dark:bg-pink-900/20 border border-rosa-500' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                selectedUserId === user.id
+                  ? "bg-pink-50 dark:bg-pink-900/20 border border-rosa-500"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
               onClick={() => onSelect(user)}
             >

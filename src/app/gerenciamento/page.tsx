@@ -1,13 +1,14 @@
 "use client";
 
 import { TipoUsuario } from "@prisma/client";
-import { Check, Search, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+import { FilterBar, FilterOption } from "@/components/filterbar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -101,6 +102,11 @@ const Gerenciamento: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  const roleOptions: FilterOption<"all" | TipoUsuario>[] = [
+    { value: "all", label: "Todas as funções" },
+    ...Object.values(TipoUsuario).map((r) => ({ value: r, label: r })),
+  ];
+
   return (
     <div className="container mx-auto animate-fade-in">
       <div className="mb-8">
@@ -114,32 +120,16 @@ const Gerenciamento: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar usuários..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <FilterBar
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar usuários..."
+            selectValue={roleFilter}
+            onSelectChange={setRoleFilter}
+            selectOptions={roleOptions}
+            selectPlaceholder="Filtrar por função"
+          />
             </div>
-            <Select
-              onValueChange={(v: "all" | TipoUsuario) =>
-                setRoleFilter(v)
-              }
-              value={roleFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por função" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as funções</SelectItem>
-                {Object.values(TipoUsuario).map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -165,7 +155,15 @@ const Gerenciamento: React.FC = () => {
                       : ""
                   }
                 >
-                  <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell className="font-medium flex items-center gap-2">
+                      <Avatar>
+                        <AvatarImage
+                          src={user.image || ""}
+                          alt={user.name || "Avatar"}
+                        />
+                      </Avatar> 
+                      {user.name}
+                    </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Select
