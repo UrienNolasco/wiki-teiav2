@@ -5,6 +5,7 @@ import { db } from "@/lib/prisma";
 export interface UpdateFormacaoDTO {
     id: string;
     nome: string;
+    descricao: string;
   }
 
 export async function updateFormacao(data: UpdateFormacaoDTO) {
@@ -12,6 +13,7 @@ export async function updateFormacao(data: UpdateFormacaoDTO) {
     where: { id: data.id },
     data: {
       nome: data.nome,
+      descricao: data.descricao,
     },
   });
   return formacao;

@@ -54,6 +54,7 @@ interface Formacao {
   id: string;
   nome: string;
   capacitacoes: string[];
+  descricao?: string;
 }
 
 interface Capacitacao {
@@ -91,6 +92,7 @@ const LibManegement = () => {
     nome: "",
     formacaoId: "",
     link_video: "",
+    descricao: "",
   });
   const [newWorkshop, setNewWorkshop] = useState({
     nome: "",
@@ -236,6 +238,7 @@ const LibManegement = () => {
     await updateFormacao({
       id: editingFormacao.id,
       nome: editingFormacao.nome,
+      descricao: editingFormacao.descricao || "",
     });
     setEditingFormacao(null);
     await fetchData();
@@ -258,7 +261,7 @@ const LibManegement = () => {
       nome: newCapacitacao.nome,
       formacaoId: newCapacitacao.formacaoId,
     });
-    setNewCapacitacao({ nome: "", formacaoId: "", link_video: "" });
+    setNewCapacitacao({ nome: "", formacaoId: "", link_video: "", descricao: "" });
     await fetchData();
     toast.success("Capacitação criada com sucesso!");
   };
@@ -423,6 +426,18 @@ const LibManegement = () => {
                             }
                           />
                         </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="edit-descricao-formacao">Descrição</Label>
+                          <Input
+                            id="edit-descricao-formacao"
+                            value={editingFormacao?.descricao || ""}
+                            onChange={(e) =>
+                              setEditingFormacao((prev) =>
+                                prev ? { ...prev, descricao: e.target.value } : prev
+                              )
+                            }
+                          />
+                        </div>
                       </div>
                       <DialogFooter>
                         <Button
@@ -531,7 +546,7 @@ const LibManegement = () => {
                   <Button
                     variant="outline"
                     onClick={() =>
-                      setNewCapacitacao({ nome: "", formacaoId: "", link_video: "" })
+                      setNewCapacitacao({ nome: "", formacaoId: "", link_video: "" , descricao: "" })
                     }
                   >
                     Cancelar

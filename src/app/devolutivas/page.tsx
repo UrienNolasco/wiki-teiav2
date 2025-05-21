@@ -226,11 +226,13 @@ const Devolutivas = () => {
 
   return (
     <> 
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-6">Devolutivas para Avaliações</h1>
-        <p className="text-muted-foreground mb-8">
+      <div className="container mx-auto animate-fade-in">
+        <div className="mb-8">
+        <h1 className="text-3xl font-bold">Devolutivas para Avaliações</h1>
+        <p className="text-muted-foreground">
           Gerencie as devolutivas para os workshops, agende e envie arquivos de feedback.
         </p>
+        </div>
 
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h2 className="text-xl font-semibold mb-4">Estrutura de Conteúdos</h2>

@@ -66,6 +66,8 @@ model Formacao {
   id           String        @id @default(uuid())
   nome         String        @unique @db.VarChar(255)
   done         Boolean       @default(false)
+  image_link   String?       @unique @db.VarChar(255)
+  descricao    String?
   capacitacoes Capacitacao[]
 }
 
