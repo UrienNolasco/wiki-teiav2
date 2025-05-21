@@ -1,9 +1,7 @@
-export type WorkshopStatus = 'agendada' | 'enviada' | null;
-
 export interface Workshop {
   id: string;
   nome: string;
-  status: WorkshopStatus;
+  status: 'agendada' | 'enviada' | null;
   data?: Date;
 }
 
@@ -22,13 +20,4 @@ export interface Formacao {
 export interface Professor {
   id: string;
   nome: string;
-}
-
-export interface WorkshopStatusData {
-  status: WorkshopStatus;
-  data?: Date;
-}
-
-export interface StatusRecord {
-  [workshopId: string]: WorkshopStatusData;
 }

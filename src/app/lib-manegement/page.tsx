@@ -421,7 +421,7 @@ const LibManegement = () => {
                       image_link: "",
                     })}
                   >
-                    Cancelar
+                    Limpar
                   </Button>
                   <Button onClick={addOneFormacao}>Adicionar</Button>
                 </DialogFooter>
@@ -499,7 +499,7 @@ const LibManegement = () => {
               variant="outline"
               onClick={() => setEditingFormacao(null)}
             >
-              Cancelar
+              Limpar
             </Button>
             <Button onClick={updateOneFormacao}>
               Salvar
@@ -604,7 +604,7 @@ const LibManegement = () => {
                       setNewCapacitacao({ nome: "", formacaoId: "", link_video: "" , descricao: "" })
                     }
                   >
-                    Cancelar
+                    Limpar
                   </Button>
                   <Button onClick={addOneCapacitacao}>Adicionar</Button>
                 </DialogFooter>
