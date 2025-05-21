@@ -53,8 +53,9 @@ import { updateWorkshop } from "../actions/workshop/updateworkshop";
 interface Formacao {
   id: string;
   nome: string;
-  capacitacoes: string[];
   descricao?: string;
+  image_link?: string;
+  capacitacoes: string[];
 }
 
 interface Capacitacao {
@@ -85,9 +86,11 @@ const LibManegement = () => {
   });
   const [searchValue, setSearchValue] = useState("");
 
-
-
-  const [newFormacao, setNewFormacao] = useState("");
+  const [newFormacao, setNewFormacao] = useState({
+    nome: "",
+    descricao: "",
+    image_link: "",
+  });
   const [newCapacitacao, setNewCapacitacao] = useState({
     nome: "",
     formacaoId: "",
@@ -182,6 +185,8 @@ const LibManegement = () => {
       const formacoes: Formacao[] = rawFormacoes.map((f) => ({
         id: f.id,
         nome: f.nome,
+        descricao: f.descricao || "", // Incluindo descricao
+        image_link: f.image_link || "", // Incluindo image_link
         capacitacoes: rawCapacitacoes
           .filter((c) => c.formacaoId === f.id)
           .map((c) => c.id),
@@ -223,22 +228,35 @@ const LibManegement = () => {
 
   // Handlers de Formação
   const addOneFormacao = async () => {
-    if (!newFormacao.trim()) {
+    const { nome, descricao, image_link } = newFormacao;
+  
+    if (!nome.trim()) {
       toast.error("Preencha o nome da formação");
       return;
     }
-    await addFormacao({ nome: newFormacao });
-    setNewFormacao("");
+  
+    await addFormacao({ nome, descricao, image_link });
+  
+    setNewFormacao({ nome: "", descricao: "", image_link: "" });
     await fetchData();
     toast.success("Formação criada com sucesso!");
   };
 
   const updateOneFormacao = async () => {
     if (!editingFormacao) return;
-    await updateFormacao({
-      id: editingFormacao.id,
-      nome: editingFormacao.nome,
-      descricao: editingFormacao.descricao || "",
+  
+    const { id, nome, descricao, image_link } = editingFormacao;
+  
+    if (!nome.trim()) {
+      toast.error("Preencha o nome da formação");
+      return;
+    }
+  
+    await updateFormacao({ 
+      id, 
+      nome: nome ?? "", 
+      descricao: descricao ?? "", 
+      image_link: image_link ?? "" 
     });
     setEditingFormacao(null);
     await fetchData();
@@ -364,20 +382,44 @@ const LibManegement = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 ">
                     <Label htmlFor="nome-formacao">Nome</Label>
                     <Input
-                      id="nome-formacao"
-                      placeholder="Ex: Formação ABAP"
-                      value={newFormacao}
-                      onChange={(e) => setNewFormacao(e.target.value)}
-                    />
+                        id="nome-formacao"
+                        placeholder="Ex: Formação ABAP"
+                        value={newFormacao.nome}
+                        onChange={(e) =>
+                          setNewFormacao((prev) => ({ ...prev, nome: e.target.value }))
+                        }
+                      />
+                    <Label htmlFor="descricao-formacao">Descricao</Label>
+                    <Input
+                        id="descricao-formacao"
+                        placeholder="Ex: Descrição ABAP"
+                        value={newFormacao.descricao}
+                        onChange={(e) =>
+                          setNewFormacao((prev) => ({ ...prev, descricao: e.target.value }))
+                        }
+                      />
+                    <Label htmlFor="imagem-formacao">Imagem</Label>
+                    <Input
+                        id="imagem-formacao"
+                        placeholder="Ex: URL da imagem"
+                        value={newFormacao.image_link}
+                        onChange={(e) =>
+                          setNewFormacao((prev) => ({ ...prev, image_link: e.target.value }))
+                        }
+                      />
                   </div>
                 </div>
                 <DialogFooter>
                   <Button
                     variant="outline"
-                    onClick={() => setNewFormacao("")}
+                    onClick={() => setNewFormacao({
+                      nome: "",
+                      descricao: "",
+                      image_link: "",
+                    })}
                   >
                     Cancelar
                   </Button>
@@ -388,81 +430,94 @@ const LibManegement = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFormacoes.map((f) => (
-              <Card key={f.id} className="shadow-md">
-                <CardHeader>
-                  <CardTitle>{f.nome}</CardTitle>
-                  <CardDescription>
-                    {f.capacitacoes.length} capacitações
-                  </CardDescription>
-                </CardHeader>
-                <CardFooter className="flex justify-between">
-                  <Dialog>
-                  <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingFormacao(f)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                      </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Editar Formação</DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="edit-nome-formacao">Nome</Label>
-                          <Input
-                            id="edit-nome-formacao"
-                            value={editingFormacao?.nome || ""}
-                            onChange={(e) =>
-                              setEditingFormacao((prev) =>
-                                prev
-                                  ? { ...prev, nome: e.target.value }
-                                  : prev
-                              )
-                            }
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="edit-descricao-formacao">Descrição</Label>
-                          <Input
-                            id="edit-descricao-formacao"
-                            value={editingFormacao?.descricao || ""}
-                            onChange={(e) =>
-                              setEditingFormacao((prev) =>
-                                prev ? { ...prev, descricao: e.target.value } : prev
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditingFormacao(null)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button onClick={updateOneFormacao}>
-                          Salvar
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setItemToDelete({ type: "formacao", id: f.id })}
-                    >   
-                      <Trash2 className="mr-2 h-4 w-4" /> Excluir
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+  
+          {filteredFormacoes.map((f) => (
+  <Card key={f.id} className="shadow-md">
+    <CardHeader>
+      <CardTitle>{f.nome}</CardTitle>
+      <CardDescription>
+        {f.capacitacoes.length} capacitações
+      </CardDescription>
+    </CardHeader>
+    <CardFooter className="flex justify-between">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditingFormacao(f)}
+          >
+            <Edit className="mr-2 h-4 w-4" /> Editar
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Formação</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-nome-formacao">Nome</Label>
+              <Input
+                id="edit-nome-formacao"
+                value={editingFormacao?.nome || ""}
+                onChange={(e) =>
+                  setEditingFormacao((prev) =>
+                    prev
+                      ? { ...prev, nome: e.target.value }
+                      : prev
+                  )
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-descricao-formacao">Descrição</Label>
+              <Input
+                id="edit-descricao-formacao"
+                value={editingFormacao?.descricao || ""}
+                onChange={(e) =>
+                  setEditingFormacao((prev) =>
+                    prev ? { ...prev, descricao: e.target.value } : prev
+                  )
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-image-link-formacao">Link da Imagem</Label>
+              <Input
+                id="edit-image-link-formacao"
+                value={editingFormacao?.image_link || ""}
+                onChange={(e) =>
+                  setEditingFormacao((prev) =>
+                    prev ? { ...prev, image_link: e.target.value } : prev
+                  )
+                }
+              />
+            </div>
           </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingFormacao(null)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={updateOneFormacao}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={() => setItemToDelete({ type: "formacao", id: f.id })}
+      >   
+        <Trash2 className="mr-2 h-4 w-4" /> Excluir
+      </Button>
+    </CardFooter>
+  </Card>
+))}
+</div>
         </TabsContent>
 
         {/* === CAPACITAÇÕES === */}
@@ -788,7 +843,11 @@ const LibManegement = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingWorkshop(w)}
+                        onClick={() => {
+                          console.log("Workshop antes de editar:", w);
+                          setEditingWorkshop(w);
+                          console.log("Estado editingWorkshop após set:", editingWorkshop);
+                        }}
                       >
                         <Edit className="mr-2 h-4 w-4" /> Editar
                       </Button>

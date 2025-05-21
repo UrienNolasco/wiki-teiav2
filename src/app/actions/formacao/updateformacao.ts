@@ -6,6 +6,7 @@ export interface UpdateFormacaoDTO {
     id: string;
     nome: string;
     descricao: string;
+    image_link: string;
   }
 
 export async function updateFormacao(data: UpdateFormacaoDTO) {
@@ -14,6 +15,7 @@ export async function updateFormacao(data: UpdateFormacaoDTO) {
     data: {
       nome: data.nome,
       descricao: data.descricao,
+      image_link: data.image_link,
     },
   });
   return formacao;
