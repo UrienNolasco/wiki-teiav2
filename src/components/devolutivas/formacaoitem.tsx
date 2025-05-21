@@ -13,7 +13,7 @@ interface FormacaoItemProps {
   expandedCapacitacoes: string[];
   toggleFormacao: (id: string) => void;
   toggleCapacitacao: (id: string) => void;
-  getWorkshopStatus: (workshop: Workshop) => { status: 'agendada' | 'enviada' | null, data?: Date };
+  getAgendamentoInfo: (workshop: Workshop) => { status: 'agendada' | 'enviada' | null, data?: Date };
   onSchedule: (workshop: Workshop) => void;
   onUpload: (workshop: Workshop) => void;
 }
@@ -24,7 +24,7 @@ const FormacaoItem: React.FC<FormacaoItemProps> = ({
   expandedCapacitacoes,
   toggleFormacao,
   toggleCapacitacao,
-  getWorkshopStatus,
+  getAgendamentoInfo,
   onSchedule,
   onUpload,
 }) => (
@@ -54,7 +54,7 @@ const FormacaoItem: React.FC<FormacaoItemProps> = ({
             capacitacao={capacitacao}
             expanded={expandedCapacitacoes.includes(capacitacao.id)}
             toggleCapacitacao={toggleCapacitacao}
-            getWorkshopStatus={getWorkshopStatus}
+            getAgendamentoInfo={getAgendamentoInfo}
             onSchedule={onSchedule}
             onUpload={onUpload}
           />

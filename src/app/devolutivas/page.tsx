@@ -10,8 +10,13 @@ import {
   AvaliadorParaSelecao,
   DevolutivaAgendamentoFrontend,
   FormacaoFrontend,
+  RawCapacitacao,
+  RawDevolutivaAgendamento,
+  RawFormacao,
+  RawWorkshop,
   WorkshopFrontend
 } from '@/components/devolutivas/types';
+import UploadDialog from '@/components/devolutivas/uploaddialog';
 
 import { agendarNovaDevolutiva } from '../actions/agendarNovaDevolutiva';
 import { getAllFormacaoComAgendamentos } from '../actions/formacao/getAllFormacaoComAgendamentos';
@@ -35,14 +40,14 @@ const Devolutivas: React.FC = () => {
   const { data: session } = useSession();
   const idDoUsuarioLogado = session?.user?.id;
 
-  const parseFetchedFormacoes = (data: any[]): FormacaoFrontend[] => {
-    return data.map(f => ({
+  const parseFetchedFormacoes = (data: RawFormacao[]): FormacaoFrontend[] => {
+    return data.map((f:RawFormacao) => ({
       ...f,
-      capacitacoes: f.capacitacoes.map((c: any) => ({
+      capacitacoes: f.capacitacoes.map((c: RawCapacitacao) => ({
         ...c,
-        workshops: c.workshops.map((w: any) => ({
+        workshops: c.workshops.map((w: RawWorkshop) => ({
           ...w,
-          devolutivasAgendadas: w.devolutivasAgendadas?.map((da: any) => ({
+          devolutivasAgendadas: w.devolutivasAgendadas?.map((da: RawDevolutivaAgendamento) => ({
             ...da,
             dataAgendada: new Date(da.dataAgendada),
             criadoEm: new Date(da.criadoEm),
@@ -58,7 +63,7 @@ const Devolutivas: React.FC = () => {
         getAllFormacaoComAgendamentos(),
         getAvaliadores(),
       ]);
-      setFormacoes(parseFetchedFormacoes(formacoesData));
+      setFormacoes(parseFetchedFormacoes(formacoesData as RawFormacao[]));
       setAvaliadores(avaliadoresData as AvaliadorParaSelecao[]);
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -146,8 +151,7 @@ const Devolutivas: React.FC = () => {
       toast.success("Devolutiva agendada com sucesso!");
       setIsScheduleOpen(false);
       fetchData(); // Recarrega os dados para refletir o novo agendamento
-    } catch (error: any) {
-      toast.error(error.message || "Falha ao agendar devolutiva.");
+    } catch (error) {
       console.error("Erro ao salvar agendamento:", error);
     }
   };
@@ -229,7 +233,7 @@ const Devolutivas: React.FC = () => {
         setSelectedDate={setSelectedDate}
         selectedProfessorId={selectedProfessorId} // Passando o ID
         setSelectedProfessorId={setSelectedProfessorId} // Passando a função de set para o ID
-        avaliadores={avaliadores} // Passando a lista de avaliadores do backend
+        avaliadores={avaliadores} 
         onSave={saveSchedule}
       />
       <UploadDialog

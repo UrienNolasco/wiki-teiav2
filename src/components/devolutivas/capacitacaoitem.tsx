@@ -3,24 +3,24 @@ import React from "react";
 
 import { cn } from "@/lib/utils";
 
-import { Capacitacao, Workshop } from "./types";
+import { CapacitacaoFrontend, WorkshopFrontend } from "./types";
 import WorkshopItem from "./workshopitem";
 
 
 interface CapacitacaoItemProps {
-  capacitacao: Capacitacao;
+  capacitacao: CapacitacaoFrontend;
   expanded: boolean;
   toggleCapacitacao: (id: string) => void;
-  getWorkshopStatus: (workshop: Workshop) => { status: 'agendada' | 'enviada' | null, data?: Date };
-  onSchedule: (workshop: Workshop) => void;
-  onUpload: (workshop: Workshop) => void;
+  getAgendamentoInfo: (workshop: WorkshopFrontend) => { status: 'agendada' | 'enviada' | null, data?: Date };
+  onSchedule: (workshop: WorkshopFrontend) => void;
+  onUpload: (workshop: WorkshopFrontend) => void;
 }
 
 const CapacitacaoItem: React.FC<CapacitacaoItemProps> = ({
   capacitacao,
   expanded,
   toggleCapacitacao,
-  getWorkshopStatus,
+  getAgendamentoInfo,
   onSchedule,
   onUpload,
 }) => (
@@ -48,7 +48,7 @@ const CapacitacaoItem: React.FC<CapacitacaoItemProps> = ({
           <WorkshopItem
             key={workshop.id}
             workshop={workshop}
-            status={getWorkshopStatus(workshop)}
+            status={getAgendamentoInfo(workshop)}
             onSchedule={onSchedule}
             onUpload={onUpload}
           />

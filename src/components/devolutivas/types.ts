@@ -134,3 +134,45 @@ export interface AvaliacaoWorkshopFrontend {
   feedback?: string | null;
 }
 */
+export interface RawUserBasicInfo {
+  id: string;
+  name?: string | null;
+}
+
+export interface RawDevolutivaAgendamento {
+  id: string;
+  workshopId: string;
+  agendadorId: string;
+  agendador?: RawUserBasicInfo | null;
+  avaliadorId: string;
+  avaliador?: RawUserBasicInfo | null;
+  dataAgendada: string; // Data como string
+  criadoEm: string;     // Data como string
+}
+
+export interface RawWorkshop {
+  id: string;
+  nome: string;
+  capacitacaoId: string;
+  link_video?: string | null;
+  devolutivasAgendadas?: RawDevolutivaAgendamento[];
+
+}
+
+export interface RawCapacitacao {
+  id:         string;     
+  nome:       string;    
+  link_video: string;
+  formacaoId: string;
+  done:       boolean;    
+  workshops: RawWorkshop[];
+}
+
+export interface RawFormacao { // Exporte se definir em types.ts
+  id: string;
+  nome: string;
+  done: boolean;
+  image_link: string | null;
+  descricao: string | null;
+  capacitacoes: RawCapacitacao[];
+}
