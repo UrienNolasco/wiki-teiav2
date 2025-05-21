@@ -1,17 +1,24 @@
+
 import React from "react";
 
 import FormacaoItem from "./formacaoitem";
-import { Formacao, Workshop } from "./types";
+import { DevolutivaAgendamentoFrontend, FormacaoFrontend, WorkshopFrontend,  } from "./types";
 
 interface EstruturaDeConteudosProps {
-  formacoes: Formacao[];
+  formacoes: FormacaoFrontend[];
   expandedFormacoes: string[];
   expandedCapacitacoes: string[];
   toggleFormacao: (id: string) => void;
   toggleCapacitacao: (id: string) => void;
-  getWorkshopStatus: (workshop: Workshop) => { status: 'agendada' | 'enviada' | null, data?: Date };
-  onSchedule: (workshop: Workshop) => void;
-  onUpload: (workshop: Workshop) => void;
+  getAgendamentoInfo: (workshop: WorkshopFrontend) => {
+    temAgendamento: boolean;
+    agendamento?: DevolutivaAgendamentoFrontend;
+    podeAgendar: boolean;
+    statusExibicao: 'agendada' | 'nenhum' | 'outro_status_se_houver'; // Ajuste conforme sua lógica
+    dataExibicao?: Date;
+  };
+  onSchedule: (workshop: WorkshopFrontend) => void;
+  onUpload: (workshop: WorkshopFrontend) => void;
 }
 
 const EstruturaDeConteudos: React.FC<EstruturaDeConteudosProps> = ({
@@ -20,7 +27,7 @@ const EstruturaDeConteudos: React.FC<EstruturaDeConteudosProps> = ({
   expandedCapacitacoes,
   toggleFormacao,
   toggleCapacitacao,
-  getWorkshopStatus,
+  getAgendamentoInfo,
   onSchedule,
   onUpload,
 }) => (
@@ -33,7 +40,7 @@ const EstruturaDeConteudos: React.FC<EstruturaDeConteudosProps> = ({
         expandedCapacitacoes={expandedCapacitacoes}
         toggleFormacao={toggleFormacao}
         toggleCapacitacao={toggleCapacitacao}
-        getWorkshopStatus={getWorkshopStatus}
+        getAgendamentoInfo={getAgendamentoInfo}
         onSchedule={onSchedule}
         onUpload={onUpload}
       />

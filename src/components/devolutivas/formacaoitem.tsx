@@ -1,10 +1,11 @@
+import { Formacao, Workshop } from "@prisma/client";
 import { ChevronRight,Folder, FolderOpen } from "lucide-react";
 import React from "react";
 
 import { cn } from "@/lib/utils";
 
 import CapacitacaoItem from "./capacitacaoitem";
-import { Formacao, Workshop } from "./types";
+
 
 interface FormacaoItemProps {
   formacao: Formacao;

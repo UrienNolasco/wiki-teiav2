@@ -23,6 +23,9 @@ model User {
   sessions                            Session[]
 
   AvaliacaoWorkshop AvaliacaoWorkshop[]
+
+  agendamentosAgendador DevolutivaAgendamento[] @relation("AgendadorDevolutivas")
+  agendamentosAvaliador DevolutivaAgendamento[] @relation("AvaliadorDevolutivas")
 }
 
 model Account {
@@ -91,6 +94,8 @@ model Workshop {
   capacitacao       Capacitacao         @relation(fields: [capacitacaoId], references: [id], onDelete: Cascade)
 
   AvaliacaoWorkshop AvaliacaoWorkshop[]
+
+  DevolutivaAgendamento DevolutivaAgendamento[]
 }
 
 model Devolutiva {
@@ -106,8 +111,6 @@ model Devolutiva {
   workshop      Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
 }
 
-
-
 model Avaliacao {
   id           String     @id @default(uuid())
   devolutivaId String
@@ -119,16 +122,16 @@ model Avaliacao {
 }
 
 model ProgressoWorkshop {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   usuarioId  String
   workshopId String
-  done       Boolean  @default(false)
-  truedone   Boolean  @default(false) // Novo campo
+  done       Boolean   @default(false)
+  truedone   Boolean   @default(false) // Novo campo
   startedAt  DateTime? // Novo campo
   doneAt     DateTime? // Novo campo
   truedoneAt DateTime? // Novo campo
-  usuario    User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  usuario    User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  workshop   Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
 
   @@unique([usuarioId, workshopId])
 }
@@ -138,7 +141,7 @@ model AvaliacaoWorkshop {
   usuarioId  String
   workshopId String
   rating     Int      @default(0) // Armazena valores de 0 a 5
-  feedback   String?  // Campo opcional de texto
+  feedback   String? // Campo opcional de texto
   usuario    User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
 
@@ -146,6 +149,23 @@ model AvaliacaoWorkshop {
   @@unique([usuarioId, workshopId])
 }
 
+model DevolutivaAgendamento {
+  id String @id @default(uuid())
+
+  workshopId String
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  agendadorId String
+  agendador   User   @relation("AgendadorDevolutivas", fields: [agendadorId], references: [id])
+
+  avaliadorId String
+  avaliador   User   @relation("AvaliadorDevolutivas", fields: [avaliadorId], references: [id])
+
+  dataAgendada DateTime
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
 
 enum TipoUsuario {
   Aluno

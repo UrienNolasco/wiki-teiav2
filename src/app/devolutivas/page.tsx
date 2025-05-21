@@ -1,104 +1,103 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { toast } from 'react-toastify';
+import { useSession } from 'next-auth/react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify'; 
 
-import EstruturaDeConteudos from '@/components/devolutivas/estruturadeconteudo';
-import ScheduleDialog from '@/components/devolutivas/scheduledialog';
-import UploadDialog from '@/components/devolutivas/uploaddialog';
+import EstruturaDeConteudos from '@/components/devolutivas/estruturadeconteudo'; 
+import ScheduleDialog from '@/components/devolutivas/scheduledialog';         
+import {
+  AvaliadorParaSelecao,
+  DevolutivaAgendamentoFrontend,
+  FormacaoFrontend,
+  WorkshopFrontend
+} from '@/components/devolutivas/types';
 
-// Mock data
-const formacoes = [
-  {
-    id: 'f1',
-    nome: 'Formação ABAP',
-    capacitacoes: [
-      {
-        id: 'c1',
-        nome: 'Capacitação Básica ABAP',
-        workshops: [
-          { id: 'w1', nome: 'Workshop 1 ABAP', status: null },
-          { id: 'w2', nome: 'Workshop 2 ABAP', status: 'agendada' as const, data: new Date('2025-06-01') },
-          { id: 'w3', nome: 'Workshop 3 ABAP', status: 'enviada' as const, data: new Date('2025-05-20') }
-        ]
-      },
-      {
-        id: 'c2',
-        nome: 'Capacitação Avançada ABAP',
-        workshops: [
-          { id: 'w4', nome: 'Workshop 4 ABAP', status: null },
-          { id: 'w5', nome: 'Workshop 5 ABAP', status: null }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'f2',
-    nome: 'Formação SD',
-    capacitacoes: [
-      {
-        id: 'c3',
-        nome: 'Capacitação SD',
-        workshops: [
-          { id: 'w6', nome: 'Workshop 1 SD', status: null },
-          { id: 'w7', nome: 'Workshop 2 SD', status: 'agendada' as const, data: new Date('2025-06-10') }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'f3',
-    nome: 'Formação MM',
-    capacitacoes: [
-      {
-        id: 'c4',
-        nome: 'Capacitação MM',
-        workshops: [
-          { id: 'w8', nome: 'Workshop 1 MM', status: 'enviada' as const, data: new Date('2025-05-15') },
-          { id: 'w9', nome: 'Workshop 2 MM', status: null }
-        ]
-      }
-    ]
-  }
-];
+import { agendarNovaDevolutiva } from '../actions/agendarNovaDevolutiva';
+import { getAllFormacaoComAgendamentos } from '../actions/formacao/getAllFormacaoComAgendamentos';
+import { getAvaliadores } from '../actions/getAvaliadores';
 
-const professores = [
-  { id: 'p1', nome: 'Prof. Ana Silva' },
-  { id: 'p2', nome: 'Prof. Carlos Santos' },
-  { id: 'p3', nome: 'Prof. Maria Oliveira' },
-  { id: 'p4', nome: 'Prof. João Pereira' }
-];
-
-interface Workshop {
-  id: string;
-  nome: string;
-  status: 'agendada' | 'enviada' | null;
-  data?: Date;
-}
-
-// interface Capacitacao {
-//   id: string;
-//   nome: string;
-//   workshops: Workshop[];
-// }
-
-// interface Formacao {
-//   id: string;
-//   nome: string;
-//   capacitacoes: Capacitacao[];
-// }
 
 const Devolutivas: React.FC = () => {
+  const [formacoes, setFormacoes] = useState<FormacaoFrontend[]>([]);
+  const [avaliadores, setAvaliadores] = useState<AvaliadorParaSelecao[]>([]);
   const [expandedFormacoes, setExpandedFormacoes] = useState<string[]>([]);
   const [expandedCapacitacoes, setExpandedCapacitacoes] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedProfessor, setSelectedProfessor] = useState<string>("");
-  const [currentWorkshop, setCurrentWorkshop] = useState<Workshop | null>(null);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [selectedProfessorId, setSelectedProfessorId] = useState<string>("");
+  const [currentWorkshop, setCurrentWorkshop] = useState<WorkshopFrontend | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false); // Adicionado para controlar o UploadDialog
   const [isDragging, setIsDragging] = useState(false);
   const [fileSelected, setFileSelected] = useState<File | null>(null);
-  const [workshopStatus, setWorkshopStatus] = useState<Record<string, { status: 'agendada' | 'enviada' | null, data?: Date }>>({});
+  // const [currentDevolutivaId, setCurrentDevolutivaId] = useState<string | null>(null); // Se necessário para upload
+
+  const { data: session } = useSession();
+  const idDoUsuarioLogado = session?.user?.id;
+
+  const parseFetchedFormacoes = (data: any[]): FormacaoFrontend[] => {
+    return data.map(f => ({
+      ...f,
+      capacitacoes: f.capacitacoes.map((c: any) => ({
+        ...c,
+        workshops: c.workshops.map((w: any) => ({
+          ...w,
+          devolutivasAgendadas: w.devolutivasAgendadas?.map((da: any) => ({
+            ...da,
+            dataAgendada: new Date(da.dataAgendada),
+            criadoEm: new Date(da.criadoEm),
+          })) || [],
+        })),
+      })),
+    }));
+  };
+
+  const fetchData = async () => {
+    try {
+      const [formacoesData, avaliadoresData] = await Promise.all([
+        getAllFormacaoComAgendamentos(),
+        getAvaliadores(),
+      ]);
+      setFormacoes(parseFetchedFormacoes(formacoesData));
+      setAvaliadores(avaliadoresData as AvaliadorParaSelecao[]);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      toast.error("Falha ao carregar dados da página.");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const getAgendamentoInfoParaWorkshop = (workshop: WorkshopFrontend): {
+    temAgendamento: boolean;
+    agendamento?: DevolutivaAgendamentoFrontend;
+    podeAgendar: boolean;
+    statusExibicao: 'agendada' | 'nenhum';
+    dataExibicao?: Date;
+  } => {
+    const agendamentoMaisRecente = workshop.devolutivasAgendadas && workshop.devolutivasAgendadas.length > 0
+      ? [...workshop.devolutivasAgendadas].sort((a, b) => b.criadoEm.getTime() - a.criadoEm.getTime())[0]
+      : undefined;
+
+    if (agendamentoMaisRecente) {
+        return {
+            temAgendamento: true,
+            agendamento: agendamentoMaisRecente,
+            podeAgendar: false,
+            statusExibicao: 'agendada',
+            dataExibicao: agendamentoMaisRecente.dataAgendada,
+        };
+    }
+    return {
+      temAgendamento: false,
+      agendamento: undefined,
+      podeAgendar: true, 
+      statusExibicao: 'nenhum',
+      dataExibicao: undefined,
+    };
+  };
 
   const toggleFormacao = (id: string) => {
     setExpandedFormacoes((prev) =>
@@ -112,43 +111,54 @@ const Devolutivas: React.FC = () => {
     );
   };
 
-  const handleScheduleDevolutiva = (workshop: Workshop) => {
+  const handleScheduleDevolutiva = (workshop: WorkshopFrontend) => {
     setCurrentWorkshop(workshop);
+    setSelectedDate(undefined); 
+    setSelectedProfessorId(""); 
     setIsScheduleOpen(true);
-    setSelectedDate(workshop.data);
-    setSelectedProfessor("");
   };
 
-  const handleUploadDevolutiva = (workshop: Workshop) => {
-    setCurrentWorkshop(workshop);
-    setIsUploadOpen(true);
-    setFileSelected(null);
+  const handleUploadDevolutiva = (workshop: WorkshopFrontend) => {
+    const infoAgendamento = getAgendamentoInfoParaWorkshop(workshop);
+    if (infoAgendamento.temAgendamento) {
+        setCurrentWorkshop(workshop); 
+        setIsUploadOpen(true);
+        setFileSelected(null);
+        toast.info("Funcionalidade de upload de arquivo a ser implementada ou conectada.");
+    } else {
+        toast.warn("Agende uma devolutiva primeiro para este workshop antes de enviar um arquivo.");
+    }
   };
 
-  const saveSchedule = () => {
-    if (!currentWorkshop || !selectedDate || !selectedProfessor) {
-      toast.error("Por favor, selecione uma data e um professor.");
+  const saveSchedule = async () => {
+    if (!currentWorkshop || !selectedDate || !selectedProfessorId || !idDoUsuarioLogado) {
+      toast.error("Workshop, data, professor ou usuário não autenticado são inválidos.");
       return;
     }
-    setWorkshopStatus({
-      ...workshopStatus,
-      [currentWorkshop.id]: { status: "agendada", data: selectedDate },
-    });
-    setIsScheduleOpen(false);
-    toast.success("Devolutiva agendada com sucesso!");
+
+    try {
+      await agendarNovaDevolutiva({
+        workshopId: currentWorkshop.id,
+        avaliadorId: selectedProfessorId,
+        dataAgendada: selectedDate,
+        agendadorId: idDoUsuarioLogado,
+      });
+      toast.success("Devolutiva agendada com sucesso!");
+      setIsScheduleOpen(false);
+      fetchData(); // Recarrega os dados para refletir o novo agendamento
+    } catch (error: any) {
+      toast.error(error.message || "Falha ao agendar devolutiva.");
+      console.error("Erro ao salvar agendamento:", error);
+    }
   };
 
-  const saveUpload = () => {
+  const saveUpload = async () => { // Tornada async para futuras chamadas de API
     if (!currentWorkshop || !fileSelected) {
-      toast.error("Por favor, selecione um arquivo para enviar.");
+      toast.error("Por favor, selecione um workshop e um arquivo para enviar.");
       return;
     }
-    setWorkshopStatus({
-      ...workshopStatus,
-      [currentWorkshop.id]: { status: "enviada", data: new Date() },
-    });
+    toast.info(`Simulação de envio do arquivo: ${fileSelected.name} para o workshop ${currentWorkshop.nome}. Lógica a implementar.`);
     setIsUploadOpen(false);
-    toast.success("Devolutiva enviada com sucesso!");
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -166,7 +176,7 @@ const Devolutivas: React.FC = () => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    setIsDragging(true); // Mantenha true enquanto arrasta sobre
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -188,13 +198,6 @@ const Devolutivas: React.FC = () => {
     }
   };
 
-  const getWorkshopStatus = (workshop: Workshop) => {
-    if (workshopStatus[workshop.id]) {
-      return workshopStatus[workshop.id];
-    }
-    return { status: workshop.status, data: workshop.data };
-  };
-
   return (
     <>
       <div className="container mx-auto animate-fade-in">
@@ -212,7 +215,7 @@ const Devolutivas: React.FC = () => {
             expandedCapacitacoes={expandedCapacitacoes}
             toggleFormacao={toggleFormacao}
             toggleCapacitacao={toggleCapacitacao}
-            getWorkshopStatus={getWorkshopStatus}
+            getAgendamentoInfo={getAgendamentoInfoParaWorkshop}
             onSchedule={handleScheduleDevolutiva}
             onUpload={handleUploadDevolutiva}
           />
@@ -221,18 +224,18 @@ const Devolutivas: React.FC = () => {
       <ScheduleDialog
         open={isScheduleOpen}
         onOpenChange={setIsScheduleOpen}
-        workshop={currentWorkshop}
+        workshop={currentWorkshop} // WorkshopFrontend | null
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        selectedProfessor={selectedProfessor}
-        setSelectedProfessor={setSelectedProfessor}
-        professores={professores}
+        selectedProfessorId={selectedProfessorId} // Passando o ID
+        setSelectedProfessorId={setSelectedProfessorId} // Passando a função de set para o ID
+        avaliadores={avaliadores} // Passando a lista de avaliadores do backend
         onSave={saveSchedule}
       />
       <UploadDialog
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
-        workshop={currentWorkshop}
+        workshop={currentWorkshop} // WorkshopFrontend | null
         isDragging={isDragging}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}

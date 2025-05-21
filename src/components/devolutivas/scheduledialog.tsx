@@ -11,16 +11,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-import { Professor,Workshop } from "./types";
+import { WorkshopFrontend } from "./types";
 
 interface ScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workshop: Workshop | null;
+  workshop: WorkshopFrontend | null;
   selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
-  selectedProfessor: string;
-  setSelectedProfessor: (id: string) => void;
+  selectedProfessorId: string;
+  setSelectedProfessorId: (id: string) => void;
   professores: Professor[];
   onSave: () => void;
 }
@@ -31,8 +31,8 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   workshop,
   selectedDate,
   setSelectedDate,
-  selectedProfessor,
-  setSelectedProfessor,
+  selectedProfessorId,
+  setSelectedProfessorId,
   professores,
   onSave,
 }) => (
@@ -72,7 +72,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
         </div>
         <div className="grid gap-2">
           <Label htmlFor="professor">Professor</Label>
-          <Select value={selectedProfessor} onValueChange={setSelectedProfessor}>
+          <Select value={selectedProfessorId} onValueChange={setSelectedProfessorId}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um professor" />
             </SelectTrigger>
