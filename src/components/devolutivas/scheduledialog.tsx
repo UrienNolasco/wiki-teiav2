@@ -48,27 +48,27 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
         <div className="grid gap-2">
           <Label htmlFor="date">Data da Devolutiva</Label>
           <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP") : <span>Selecione uma data</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-          </Popover>
+  <PopoverTrigger asChild>
+    <Button
+      variant={"outline"}
+      className={cn(
+        "w-full justify-start text-left font-normal",
+      )}
+    >
+      <CalendarIcon className="mr-2 h-4 w-4" />
+      {selectedDate ? format(selectedDate, "PPP") : <span>Selecione uma data</span>}
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent className="w-auto p-0 z-[1001]" align="start">
+    <Calendar
+      mode="single"
+      selected={selectedDate}
+      onSelect={setSelectedDate}
+      initialFocus
+      locale={ptBR}
+    />
+  </PopoverContent>
+</Popover>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="professor">Professor</Label>
