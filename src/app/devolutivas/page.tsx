@@ -19,6 +19,7 @@ import {
 import UploadDialog from '@/components/devolutivas/uploaddialog';
 
 import { agendarNovaDevolutiva } from '../actions/agendarNovaDevolutiva';
+import { createTeamsMeeting } from '../actions/createTeamsMeeting';
 import { getAllFormacaoComAgendamentos } from '../actions/formacao/getAllFormacaoComAgendamentos';
 import { getAvaliadores } from '../actions/getAvaliadores';
 import { updateDevolutivaAgendada } from '../actions/updateDevolutivaAgendada';
@@ -41,6 +42,8 @@ const Devolutivas: React.FC = () => {
 
   const { data: session } = useSession();
   const idDoUsuarioLogado = session?.user?.id;
+  const emailDoUsuarioLogado = session?.user?.email;
+  const nomeDoUsuarioLogado = session?.user?.name;
 
   const parseFetchedFormacoes = (data: RawFormacao[]): FormacaoFrontend[] => {
     return data.map((f:RawFormacao) => ({
@@ -151,25 +154,83 @@ const Devolutivas: React.FC = () => {
       toast.error("Workshop, data, professor ou usuário não autenticado são inválidos.");
       return;
     }
-  
+    
+    let operacaoBemSucedida = false;
+    let devolutivaAgendadaId: string | undefined;
+
+
     try {
       if (editingDevolutivaId) {
         // Atualizar agendamento existente
-        await updateDevolutivaAgendada({
+        const devolutivaAtualizada = await updateDevolutivaAgendada({
           devolutivaAgendamentoId: editingDevolutivaId,
           dataAgendada: selectedDate,
           avaliadorId: selectedProfessorId,
         });
+        devolutivaAgendadaId = devolutivaAtualizada.id;
         toast.success("Devolutiva reagendada com sucesso!");
+        operacaoBemSucedida = true;
       } else {
         // Criar novo agendamento
-        await agendarNovaDevolutiva({
+        const novaDevolutiva = await agendarNovaDevolutiva({
           workshopId: currentWorkshop.id,
           avaliadorId: selectedProfessorId,
           dataAgendada: selectedDate,
           agendadorId: idDoUsuarioLogado,
         });
+        devolutivaAgendadaId = novaDevolutiva.id;
         toast.success("Devolutiva agendada com sucesso!");
+        operacaoBemSucedida = true;
+
+        if (operacaoBemSucedida && devolutivaAgendadaId) {
+          const avaliadorSelecionado = avaliadores.find(a => a.id === selectedProfessorId);
+  
+          if (!avaliadorSelecionado || !avaliadorSelecionado.email) {
+            toast.warn("Email do avaliador não encontrado. Reunião do Teams não foi criada.");
+          } else if (!emailDoUsuarioLogado) {
+            toast.warn("Email do aluno (usuário logado) não encontrado. Reunião do Teams não foi criada.");
+          } else {
+            const duracaoReuniaoHoras = 1; // Exemplo: reunião de 1 hora
+            const startTime = selectedDate; // selectedDate já é um objeto Date
+            const endTime = new Date(startTime.getTime() + duracaoReuniaoHoras * 60 * 60 * 1000);
+  
+            // Formate para ISO string UTC para evitar problemas de fuso com o Graph API
+            // O Graph geralmente lida melhor com UTC e depois aplica o fuso especificado
+            const startTimeISO = startTime.toISOString();
+            const endTimeISO = endTime.toISOString();
+  
+            // Obter fuso horário do navegador do usuário pode ser uma opção,
+            // mas o fuso do evento será definido pelo servidor ou um padrão
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+  
+            const attendees = [
+              {
+                emailAddress: { address: avaliadorSelecionado.email, name: avaliadorSelecionado.name || avaliadorSelecionado.email },
+                type: "required" as const,
+              },
+              {
+                emailAddress: { address: emailDoUsuarioLogado, name: nomeDoUsuarioLogado || emailDoUsuarioLogado },
+                type: "required" as const, // O aluno (organizador) também é um participante
+              },
+            ];
+  
+            toast.info("Agendando reunião no Microsoft Teams...");
+            const teamsResponse = await createTeamsMeeting({
+              subject: `Devolutiva: ${currentWorkshop.nome} com ${avaliadorSelecionado.name || 'Avaliador'}`,
+              startTimeISO: startTimeISO,
+              endTimeISO: endTimeISO,
+              attendees: attendees,
+              timeZone: userTimeZone, // Ou um fuso padrão como "America/Sao_Paulo"
+              bodyContent: `Esta é uma reunião de devolutiva para o workshop "${currentWorkshop.nome}", agendada através da plataforma.`,
+            });
+  
+            if (teamsResponse.errorMessage) {
+              toast.error(`Falha ao criar reunião no Teams: ${teamsResponse.errorMessage}`);
+            } else {
+              toast.success(`Reunião no Teams criada! Link: ${teamsResponse.joinUrl || 'Verifique seu calendário.'}`);
+            }
+          }
+        }
       }
       setIsScheduleOpen(false);
       setEditingDevolutivaId(null); // Limpa o ID de edição após salvar
