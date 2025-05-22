@@ -844,9 +844,7 @@ const LibManegement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          console.log("Workshop antes de editar:", w);
                           setEditingWorkshop(w);
-                          console.log("Estado editingWorkshop após set:", editingWorkshop);
                         }}
                       >
                         <Edit className="mr-2 h-4 w-4" /> Editar

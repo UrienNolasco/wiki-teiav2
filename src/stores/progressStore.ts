@@ -14,7 +14,6 @@ export const useLastWorkshopStore = create<LastWorkshopState>()(
       lastWorkshopId: null,
       lastViewedAt: null,
       setLastWorkshop: (workshopId) => {
-        console.log("Salvando Workshop ID no Zustand:", workshopId); // Verifica se está sendo salvo
         set({
           lastWorkshopId: workshopId,
           lastViewedAt: new Date(),

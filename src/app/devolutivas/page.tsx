@@ -21,6 +21,7 @@ import UploadDialog from '@/components/devolutivas/uploaddialog';
 import { agendarNovaDevolutiva } from '../actions/agendarNovaDevolutiva';
 import { getAllFormacaoComAgendamentos } from '../actions/formacao/getAllFormacaoComAgendamentos';
 import { getAvaliadores } from '../actions/getAvaliadores';
+import { updateDevolutivaAgendada } from '../actions/updateDevolutivaAgendada';
 
 
 const Devolutivas: React.FC = () => {
@@ -35,6 +36,7 @@ const Devolutivas: React.FC = () => {
   const [isUploadOpen, setIsUploadOpen] = useState(false); // Adicionado para controlar o UploadDialog
   const [isDragging, setIsDragging] = useState(false);
   const [fileSelected, setFileSelected] = useState<File | null>(null);
+  const [editingDevolutivaId, setEditingDevolutivaId] = useState<string | null>(null);
   // const [currentDevolutivaId, setCurrentDevolutivaId] = useState<string | null>(null); // Se necessário para upload
 
   const { data: session } = useSession();
@@ -63,6 +65,7 @@ const Devolutivas: React.FC = () => {
         getAllFormacaoComAgendamentos(),
         getAvaliadores(),
       ]);
+      console.log("DADOS BRUTOS DO BACKEND (formacoesData):" ,formacoesData);
       setFormacoes(parseFetchedFormacoes(formacoesData as RawFormacao[]));
       setAvaliadores(avaliadoresData as AvaliadorParaSelecao[]);
     } catch (error) {
@@ -82,8 +85,8 @@ const Devolutivas: React.FC = () => {
     statusExibicao: 'agendada' | 'nenhum';
     dataExibicao?: Date;
   } => {
-    const agendamentoMaisRecente = workshop.devolutivasAgendadas && workshop.devolutivasAgendadas.length > 0
-      ? [...workshop.devolutivasAgendadas].sort((a, b) => b.criadoEm.getTime() - a.criadoEm.getTime())[0]
+    const agendamentoMaisRecente = workshop.DevolutivaAgendamento && workshop.DevolutivaAgendamento.length > 0
+      ? [...workshop.DevolutivaAgendamento].sort((a, b) => b.criadoEm.getTime() - a.criadoEm.getTime())[0]
       : undefined;
 
     if (agendamentoMaisRecente) {
@@ -118,8 +121,16 @@ const Devolutivas: React.FC = () => {
 
   const handleScheduleDevolutiva = (workshop: WorkshopFrontend) => {
     setCurrentWorkshop(workshop);
-    setSelectedDate(undefined); 
-    setSelectedProfessorId(""); 
+    const infoAgendamento = getAgendamentoInfoParaWorkshop(workshop);
+    if(infoAgendamento.temAgendamento && infoAgendamento.agendamento){
+    setSelectedDate(new Date(infoAgendamento.agendamento.dataAgendada)); // Certifique-se que é um objeto Date
+    setSelectedProfessorId(infoAgendamento.agendamento.avaliadorId);
+    setEditingDevolutivaId(infoAgendamento.agendamento.id);
+    }else {
+      setSelectedDate(undefined);
+      setSelectedProfessorId("");
+      setEditingDevolutivaId(null);
+    }
     setIsScheduleOpen(true);
   };
 
@@ -140,18 +151,31 @@ const Devolutivas: React.FC = () => {
       toast.error("Workshop, data, professor ou usuário não autenticado são inválidos.");
       return;
     }
-
+  
     try {
-      await agendarNovaDevolutiva({
-        workshopId: currentWorkshop.id,
-        avaliadorId: selectedProfessorId,
-        dataAgendada: selectedDate,
-        agendadorId: idDoUsuarioLogado,
-      });
-      toast.success("Devolutiva agendada com sucesso!");
+      if (editingDevolutivaId) {
+        // Atualizar agendamento existente
+        await updateDevolutivaAgendada({
+          devolutivaAgendamentoId: editingDevolutivaId,
+          dataAgendada: selectedDate,
+          avaliadorId: selectedProfessorId,
+        });
+        toast.success("Devolutiva reagendada com sucesso!");
+      } else {
+        // Criar novo agendamento
+        await agendarNovaDevolutiva({
+          workshopId: currentWorkshop.id,
+          avaliadorId: selectedProfessorId,
+          dataAgendada: selectedDate,
+          agendadorId: idDoUsuarioLogado,
+        });
+        toast.success("Devolutiva agendada com sucesso!");
+      }
       setIsScheduleOpen(false);
-      fetchData(); // Recarrega os dados para refletir o novo agendamento
-    } catch (error) {
+      setEditingDevolutivaId(null); // Limpa o ID de edição após salvar
+      fetchData(); // Recarrega os dados para refletir a mudança
+    } catch (error) { // Especificar 'any' ou um tipo de erro mais específico
+      toast.error("Falha ao salvar agendamento da devolutiva.");
       console.error("Erro ao salvar agendamento:", error);
     }
   };

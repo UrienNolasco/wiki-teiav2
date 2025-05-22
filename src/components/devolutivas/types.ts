@@ -79,7 +79,7 @@ export interface WorkshopFrontend {
   // Outros campos do Workshop do Prisma que você usa na UI
 
   // Dados relacionados carregados do backend:
-  devolutivasAgendadas?: DevolutivaAgendamentoFrontend[]; // Novos agendamentos
+  DevolutivaAgendamento?: DevolutivaAgendamentoFrontend[]; // Novos agendamentos
   devolutivas?: DevolucaoConteudoFrontend[];             // Registros existentes da tabela Devolutiva (se você nomeou a relação como 'devolutivas' no include do Prisma)
   progressoWorkshop?: ProgressoWorkshopFrontend[];
   // AvaliacaoWorkshop?: AvaliacaoWorkshopFrontend[]; // Se usado

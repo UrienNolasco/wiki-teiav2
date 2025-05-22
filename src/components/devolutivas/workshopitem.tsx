@@ -22,14 +22,14 @@ const WorkshopItem: React.FC<WorkshopItemProps> = ({
     <FileText className="h-4 w-4 text-gray-500" />
     <span className="flex-1 text-sm">{workshop.nome}</span>
 
-    {agendamentoInfo.statusExibicao === "enviada" && agendamentoInfo.dataExibicao && (
+    {agendamentoInfo.statusExibicao === "agendada" && agendamentoInfo.dataExibicao && (
       <div className="flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs">
         <CalendarIcon className="h-3 w-3 mr-1" />
         <span>Devolutiva agendada para {format(new Date(agendamentoInfo.dataExibicao), "dd/MM/yyyy")}</span>
       </div>
     )}
 
-    {agendamentoInfo.statusExibicao === "agendada" && ( 
+    {agendamentoInfo.statusExibicao === "enviada" && ( 
       <div className="flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs">
         <FileCheck className="h-3 w-3 mr-1" />
         <span>Devolutiva enviada</span>

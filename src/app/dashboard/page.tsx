@@ -74,9 +74,6 @@ const Progresso = () => {
         console.error("Erro ao buscar progresso:", error);
       }
     }
-    console.log("Selected User:", selectedUser);
-    console.log("Selected Capacitacao:", selectedCapacitacao);
-    console.log("Progresso do usuário:", progressoUsuario);
   };
 
   useEffect(() => {

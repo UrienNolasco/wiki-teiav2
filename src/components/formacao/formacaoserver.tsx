@@ -19,7 +19,6 @@ export default async function FormacaoServer({
   const userId = session?.user?.id;
 
   if (!userId) {
-    console.log(userId);
     return <p>Usuário não autenticado.</p>;
   }
 
