@@ -14,7 +14,7 @@ interface EstruturaDeConteudosProps {
     temAgendamento: boolean;
     agendamento?: DevolutivaAgendamentoFrontend;
     podeAgendar: boolean;
-    statusExibicao: 'agendada' | 'nenhum' | 'outro_status_se_houver'; // Ajuste conforme sua lógica
+    statusExibicao: 'agendada' | 'nenhum' | 'enviada'; // Ajuste conforme sua lógica
     dataExibicao?: Date;
   };
   onSchedule: (workshop: WorkshopFrontend) => void;

@@ -3,7 +3,7 @@ import React from "react";
 
 import { cn } from "@/lib/utils";
 
-import { CapacitacaoFrontend, WorkshopFrontend } from "./types";
+import { CapacitacaoFrontend, DevolutivaAgendamentoFrontend, WorkshopFrontend } from "./types";
 import WorkshopItem from "./workshopitem";
 
 
@@ -11,7 +11,13 @@ interface CapacitacaoItemProps {
   capacitacao: CapacitacaoFrontend;
   expanded: boolean;
   toggleCapacitacao: (id: string) => void;
-  getAgendamentoInfo: (workshop: WorkshopFrontend) => { status: 'agendada' | 'enviada' | null, data?: Date };
+  getAgendamentoInfo: (workshop: WorkshopFrontend) => {
+    temAgendamento: boolean;
+    agendamento?: DevolutivaAgendamentoFrontend;
+    podeAgendar: boolean;
+    statusExibicao: 'agendada' | 'nenhum' | 'enviada';
+    dataExibicao?: Date;
+  };
   onSchedule: (workshop: WorkshopFrontend) => void;
   onUpload: (workshop: WorkshopFrontend) => void;
 }
@@ -48,7 +54,7 @@ const CapacitacaoItem: React.FC<CapacitacaoItemProps> = ({
           <WorkshopItem
             key={workshop.id}
             workshop={workshop}
-            status={getAgendamentoInfo(workshop)}
+            agendamentoInfo={getAgendamentoInfo(workshop)}
             onSchedule={onSchedule}
             onUpload={onUpload}
           />

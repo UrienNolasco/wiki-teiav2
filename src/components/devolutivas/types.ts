@@ -176,3 +176,11 @@ export interface RawFormacao { // Exporte se definir em types.ts
   descricao: string | null;
   capacitacoes: RawCapacitacao[];
 }
+
+export interface AgendamentoInfo { 
+  temAgendamento: boolean;
+  agendamento?: DevolutivaAgendamentoFrontend;
+  podeAgendar: boolean;
+  statusExibicao: 'agendada' | 'nenhum' | 'enviada';
+  dataExibicao?: Date;
+}

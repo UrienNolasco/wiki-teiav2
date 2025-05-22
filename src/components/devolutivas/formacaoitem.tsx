@@ -1,21 +1,27 @@
-import { Formacao, Workshop } from "@prisma/client";
 import { ChevronRight,Folder, FolderOpen } from "lucide-react";
 import React from "react";
 
 import { cn } from "@/lib/utils";
 
 import CapacitacaoItem from "./capacitacaoitem";
+import { CapacitacaoFrontend, DevolutivaAgendamentoFrontend, FormacaoFrontend, WorkshopFrontend } from "./types";
 
 
 interface FormacaoItemProps {
-  formacao: Formacao;
+  formacao: FormacaoFrontend;
   expanded: boolean;
   expandedCapacitacoes: string[];
   toggleFormacao: (id: string) => void;
   toggleCapacitacao: (id: string) => void;
-  getAgendamentoInfo: (workshop: Workshop) => { status: 'agendada' | 'enviada' | null, data?: Date };
-  onSchedule: (workshop: Workshop) => void;
-  onUpload: (workshop: Workshop) => void;
+  getAgendamentoInfo: (workshop: WorkshopFrontend) => {
+    temAgendamento: boolean;
+    agendamento?: DevolutivaAgendamentoFrontend;
+    podeAgendar: boolean;
+    statusExibicao: 'agendada' | 'nenhum' | 'enviada';
+    dataExibicao?: Date;
+  };
+  onSchedule: (workshop: WorkshopFrontend) => void;
+  onUpload: (workshop: WorkshopFrontend) => void;
 }
 
 const FormacaoItem: React.FC<FormacaoItemProps> = ({
@@ -48,7 +54,7 @@ const FormacaoItem: React.FC<FormacaoItemProps> = ({
     </div>
     {expanded && (
       <div className="pl-6 pb-3">
-        {formacao.capacitacoes.map((capacitacao) => (
+        {formacao.capacitacoes.map((capacitacao: CapacitacaoFrontend) => (
           <CapacitacaoItem
             key={capacitacao.id}
             capacitacao={capacitacao}
