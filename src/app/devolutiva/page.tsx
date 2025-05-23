@@ -38,6 +38,8 @@ const Devolutivas: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [editingDevolutivaId, setEditingDevolutivaId] = useState<string | null>(null);
+  const [selectedAgendamentoIdForUpload, setSelectedAgendamentoIdForUpload] = useState<string>("");
+
   // const [currentDevolutivaId, setCurrentDevolutivaId] = useState<string | null>(null); // Se necessário para upload
 
   const { data: session } = useSession();
@@ -139,13 +141,15 @@ const Devolutivas: React.FC = () => {
 
   const handleUploadDevolutiva = (workshop: WorkshopFrontend) => {
     const infoAgendamento = getAgendamentoInfoParaWorkshop(workshop);
-    if (infoAgendamento.temAgendamento) {
+
+    if (infoAgendamento.temAgendamento && infoAgendamento.agendamento) { 
         setCurrentWorkshop(workshop); 
+        setSelectedAgendamentoIdForUpload(infoAgendamento.agendamento.id); 
         setIsUploadOpen(true);
-        setFileSelected(null);
-        toast.info("Funcionalidade de upload de arquivo a ser implementada ou conectada.");
+        setFileSelected(null); 
     } else {
         toast.warn("Agende uma devolutiva primeiro para este workshop antes de enviar um arquivo.");
+        setSelectedAgendamentoIdForUpload(""); 
     }
   };
 
@@ -241,15 +245,6 @@ const Devolutivas: React.FC = () => {
     }
   };
 
-  const saveUpload = async () => { // Tornada async para futuras chamadas de API
-    if (!currentWorkshop || !fileSelected) {
-      toast.error("Por favor, selecione um workshop e um arquivo para enviar.");
-      return;
-    }
-    toast.info(`Simulação de envio do arquivo: ${fileSelected.name} para o workshop ${currentWorkshop.nome}. Lógica a implementar.`);
-    setIsUploadOpen(false);
-  };
-
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -325,7 +320,9 @@ const Devolutivas: React.FC = () => {
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
         workshop={currentWorkshop} // WorkshopFrontend | null
+        alunoId={idDoUsuarioLogado || ""} // ID do aluno logado
         isDragging={isDragging}
+        devolutivaAgendamentoId={selectedAgendamentoIdForUpload}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -333,7 +330,6 @@ const Devolutivas: React.FC = () => {
         onFileInput={handleFileInput}
         fileSelected={fileSelected}
         setFileSelected={setFileSelected}
-        onSave={saveUpload}
       />
     </>
   );

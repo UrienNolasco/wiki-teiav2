@@ -104,10 +104,12 @@ model Devolutiva {
   alunoId       String
   tipo          TipoDevolutiva
   arquivo_url   String
-  status        StatusDevolutiva @default(Enviado)
+  status        StatusDevolutiva @default(Aguardando)
   avaliacao     Avaliacao[]
   aluno         User             @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   workshop      Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  devolutivaAgendamentoId String?
+  devolutivaAgendamento   DevolutivaAgendamento? @relation(fields: [devolutivaAgendamentoId], references: [id])
 }
 
 model Avaliacao {
@@ -164,6 +166,8 @@ model DevolutivaAgendamento {
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
+
+  devolutivas   Devolutiva[]
 }
 
 enum TipoUsuario {
@@ -180,7 +184,6 @@ enum TipoDevolutiva {
 }
 
 enum StatusDevolutiva {
-  Enviado
   Aguardando
   Aprovado
   Revisão
