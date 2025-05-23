@@ -13,7 +13,7 @@ interface AgendarDevolutivaParams {
   
   export async function agendarNovaDevolutiva({
     workshopId,
-    avaliadorId,
+    avaliadorId,  
     dataAgendada,
     agendadorId, // Este ID virá da sua lógica de autenticação
   }: AgendarDevolutivaParams) {

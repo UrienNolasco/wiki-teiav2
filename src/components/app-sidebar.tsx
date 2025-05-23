@@ -4,6 +4,7 @@ import { AvatarImage } from "@radix-ui/react-avatar";
 import {
   BarChart2,
   BookOpen,
+  CheckSquare,
   ChevronRight,
   Edit,
   FileText,
@@ -63,7 +64,7 @@ const menuItems = [
     title: "Gerenciar Conteúdos",
     url: "/lib-manegement",
     icon: Edit,
-  },
+  }
 ];
 
 export function AppSidebar() {
@@ -116,9 +117,17 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href="/devolutivas" className="flex items-center">
+                    <Link href="/devolutiva" className="flex items-center">
                       <FileText className="mr-3 h-4 w-4 flex-shrink-0" />
                       <span className="flex-1 truncate">Devolutivas</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/devolutiva/approve" className="flex items-center">
+                      <CheckSquare className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 truncate">Aprovar Devolutivas</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

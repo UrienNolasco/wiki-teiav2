@@ -105,7 +105,6 @@ model Devolutiva {
   tipo          TipoDevolutiva
   arquivo_url   String
   status        StatusDevolutiva @default(Enviado)
-  duracao_video Int?
   avaliacao     Avaliacao[]
   aluno         User             @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   workshop      Workshop         @relation(fields: [workshopId], references: [id], onDelete: Cascade)
