@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-import { Workshop } from "./types";
+import { WorkshopFrontend } from "./types";
+
 
 interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workshop: Workshop | null;
+  workshop: WorkshopFrontend | null;
   isDragging: boolean;
   onDragEnter: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
