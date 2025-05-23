@@ -187,7 +187,7 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between gap-4 border-t mt-8 items-center">
+        <CardFooter className="flex justify-between gap-4  items-center">
           <FooterAvaliation workshopId={workshop.id} isDone={!isDone} />
 
           <Button
@@ -208,7 +208,7 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
             asChild
             onClick={(e) => e.stopPropagation()}
           >
-            <Link href="#">
+            <Link href="/devolutivas">
               <MessageCircle className="h-4 w-4" />
               Devolutiva
             </Link>

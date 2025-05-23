@@ -39,7 +39,7 @@ export default function Home() {
           title="Progresso de Aprendizado"
           subtitle="Acompanhe sua evolução nos cursos"
           content="Visualize seu progresso em todas as formações e capacitações."
-          path="/progresso"
+          path="/dashboard"
           buttonText="Ver Progresso"
         />
         <QuickAcessCard
