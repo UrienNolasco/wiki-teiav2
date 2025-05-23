@@ -227,7 +227,7 @@ const Devolutivas: React.FC = () => {
             if (teamsResponse.errorMessage) {
               toast.error(`Falha ao criar reunião no Teams: ${teamsResponse.errorMessage}`);
             } else {
-              toast.success(`Reunião no Teams criada! Link: ${teamsResponse.joinUrl || 'Verifique seu calendário.'}`);
+              toast.success(`Reunião no Teams criada! 'Verifique seu calendário.'}`);
             }
           }
         }
