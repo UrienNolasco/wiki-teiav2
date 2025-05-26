@@ -1,5 +1,7 @@
 // Supostamente em um arquivo como src/types/index.ts ou similar
 
+import { StatusDevolutiva, TipoDevolutiva } from "@prisma/client";
+
 /**
  * Informações básicas do usuário, frequentemente usadas para exibição.
  */
@@ -183,4 +185,17 @@ export interface AgendamentoInfo {
   podeAgendar: boolean;
   statusExibicao: 'agendada' | 'nenhum' | 'enviada';
   dataExibicao?: Date;
+}
+
+export interface DevolutivaParaAvaliacao {
+  id: string; // Combinação de agendamentoId e devolutivaId
+  workshopId: string;
+  alunoId: string;
+  alunoNome: string;
+  workshopNome: string;
+  tipo: TipoDevolutiva;
+  arquivo_url: string;
+  status: StatusDevolutiva;
+  dataAgendada: Date;
+  devolutivaId: string; // ID original da devolutiva
 }
