@@ -10,8 +10,6 @@ import {
   FileText,
   Home,
   LogOut,
-  Search,
-  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -54,16 +52,6 @@ const menuItems = [
     title: "Dashboard de Progresso",
     url: "/dashboard",
     icon: BarChart2,
-  },
-  {
-    title: "Gerenciamento de Funções",
-    url: "/gerenciamento",
-    icon: Settings,
-  },
-  {
-    title: "Gerenciar Conteúdos",
-    url: "/lib-manegement",
-    icon: Edit,
   }
 ];
 
@@ -111,8 +99,8 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup className="mt-8">
-            <SidebarGroupLabel>Links Rápidos</SidebarGroupLabel>
+          <SidebarGroup>
+            <SidebarGroupLabel>Devolutivas</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
@@ -131,17 +119,36 @@ export function AppSidebar() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Configurações</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href="/busca" className="flex items-center">
-                      <Search className="mr-3 h-4 w-4 flex-shrink-0" />
-                      <span className="flex-1 truncate">Busca Avançada</span>
+                    <Link href="/gerenciamento" className="flex items-center">
+                      <Edit className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 truncate">Gerenciamento de Funções</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/lib-manegement" className="flex items-center">
+                      <Edit className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 truncate">Gerenciar Conteúdos</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
+
         </SidebarContent>
 
         <div className="mt-auto p-3 border-t">
