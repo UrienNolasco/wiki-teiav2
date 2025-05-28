@@ -10,7 +10,6 @@ import { DevolutivasPageHeader } from '@/components/devolutivas/approveheader';
 import { AprovarDevolutivaDialog } from '@/components/devolutivas/aprovardevolutiva';
 import { DevolutivasTable } from '@/components/devolutivas/devolutivatable';
 import { DevolverDevolutivaDialog } from '@/components/devolutivas/devolverdevolutiva';
-import { ReprovarDevolutivaDialog } from '@/components/devolutivas/reprovardevolutiva';
 import { StatusFiltersCard } from '@/components/devolutivas/statusfiltercard';
 import { DevolutivaParaAvaliacao } from '@/components/devolutivas/types';
 
@@ -22,9 +21,7 @@ const AprovacaoDevolutivasPage: React.FC = () => {
 
   const [selectedDevolutiva, setSelectedDevolutiva] = useState<DevolutivaParaAvaliacao | null>(null);
   const [isApproving, setIsApproving] = useState(false);
-  const [isReturning, setIsReturning] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
-  
+  const [isReturning, setIsReturning] = useState(false);  
   const [comentario, setComentario] = useState('');
   const [nota, setNota] = useState<string>('');
   
@@ -62,7 +59,6 @@ const AprovacaoDevolutivasPage: React.FC = () => {
   const closeAllDialogs = () => {
     setIsApproving(false);
     setIsReturning(false);
-    setIsRejecting(false);
     setSelectedDevolutiva(null);
     setComentario('');
     setNota('');
@@ -82,12 +78,6 @@ const AprovacaoDevolutivasPage: React.FC = () => {
     setIsReturning(true);
   };
 
-  const handleReprovarClick = (devolutiva: DevolutivaParaAvaliacao) => {
-    setSelectedDevolutiva(devolutiva);
-    setNota('0.0');
-    setComentario('');
-    setIsRejecting(true);
-  };
 
   const handleConfirmApprove = async () => {
     if (!selectedDevolutiva) return;
@@ -134,36 +124,6 @@ const AprovacaoDevolutivasPage: React.FC = () => {
     }
   };
 
-  const handleConfirmReject = async () => {
-    if (!selectedDevolutiva || !comentario.trim()) {
-      toast.error('Por favor, forneça um comentário sobre o motivo da reprovação.');
-      return;
-    }
-
-    // Garanta que PrismaStatusDevolutiva.Reprovado exista no seu enum!
-    if (!(PrismaStatusDevolutiva.Reprovado)) {
-        toast.error("Configuração de status 'Reprovado' ausente no sistema.");
-        console.error("Enum PrismaStatusDevolutiva não contém 'Reprovado'. Verifique seu schema.prisma e rode 'npx prisma generate'.");
-        return;
-    }
-    
-    setIsLoadingAction(true);
-    const result = await avaliarDevolutivaAction({
-      devolutivaId: selectedDevolutiva.devolutivaId,
-      novoStatus: PrismaStatusDevolutiva.Reprovado,
-      nota: nota ? parseFloat(nota) : 0,
-      comentario: comentario,
-    });
-    setIsLoadingAction(false);
-
-    if (result.success) {
-      toast.error(`Devolutiva de ${selectedDevolutiva.alunoNome} reprovada!`);
-      await carregarDevolutivas();
-      closeAllDialogs();
-    } else {
-      toast.error(result.error || "Falha ao reprovar devolutiva.");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -190,7 +150,6 @@ const AprovacaoDevolutivasPage: React.FC = () => {
         devolutivas={filteredDevolutivas}
         onAprovar={handleAprovarClick}
         onDevolver={handleDevolverClick}
-        onReprovar={handleReprovarClick}
       />
 
       {selectedDevolutiva && (
@@ -216,18 +175,6 @@ const AprovacaoDevolutivasPage: React.FC = () => {
             comentario={comentario}
             setComentario={setComentario}
             onConfirm={handleConfirmReturn}
-            isLoading={isLoadingAction}
-          />
-
-          <ReprovarDevolutivaDialog
-            isOpen={isRejecting}
-            onOpenChange={(open) => { if (!open) closeAllDialogs(); else setIsRejecting(true);}}
-            devolutiva={selectedDevolutiva}
-            nota={nota}
-            setNota={setNota}
-            comentario={comentario}
-            setComentario={setComentario}
-            onConfirm={handleConfirmReject}
             isLoading={isLoadingAction}
           />
         </>

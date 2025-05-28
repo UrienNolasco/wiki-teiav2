@@ -26,14 +26,12 @@ interface DevolutivasTableProps {
   devolutivas: DevolutivaParaAvaliacao[];
   onAprovar: (devolutiva: DevolutivaParaAvaliacao) => void;
   onDevolver: (devolutiva: DevolutivaParaAvaliacao) => void;
-  onReprovar: (devolutiva: DevolutivaParaAvaliacao) => void;
 }
 
 export const DevolutivasTable: React.FC<DevolutivasTableProps> = ({
   devolutivas,
   onAprovar,
   onDevolver,
-  onReprovar,
 }) => {
   return (
     <Card>
@@ -68,7 +66,6 @@ export const DevolutivasTable: React.FC<DevolutivasTableProps> = ({
                     devolutiva={devolutiva}
                     onAprovar={onAprovar}
                     onDevolver={onDevolver}
-                    onReprovar={onReprovar}
                   />
                 ))}
               </TableBody>

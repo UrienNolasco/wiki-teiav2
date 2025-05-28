@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { AlertCircle, CheckCircle, ExternalLink, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -12,14 +12,12 @@ interface DevolutivaTableRowProps {
   devolutiva: DevolutivaParaAvaliacao;
   onAprovar: (devolutiva: DevolutivaParaAvaliacao) => void;
   onDevolver: (devolutiva: DevolutivaParaAvaliacao) => void;
-  onReprovar: (devolutiva: DevolutivaParaAvaliacao) => void;
 }
 
 export const DevolutivaTableRow: React.FC<DevolutivaTableRowProps> = ({
   devolutiva,
   onAprovar,
   onDevolver,
-  onReprovar,
 }) => {
   return (
     <TableRow key={devolutiva.id}>
@@ -73,15 +71,6 @@ export const DevolutivaTableRow: React.FC<DevolutivaTableRowProps> = ({
           >
             <AlertCircle className="h-4 w-4 mr-1" />
             Devolver
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-red-500 text-red-600 hover:bg-red-50"
-            onClick={() => onReprovar(devolutiva)}
-          >
-            <XCircle className="h-4 w-4 mr-1" />
-            Reprovar
           </Button>
         </div>
       </TableCell>
