@@ -1,12 +1,11 @@
-// Em: @/components/devolutivas/scheduledialog.tsx
-
-import { format, getHours, getMinutes, isValid, setHours, setMinutes, startOfDay } from "date-fns"; // Funções adicionais
+import { format, getHours, getMinutes, isValid, setHours, setMinutes, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
-import React from "react"; // Não precisa de useState aqui se todo o controle é via props
+import { CalendarIcon, ChevronDown } from "lucide-react"; // Added ChevronDown
+import React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox
 import {
   Dialog,
   DialogContent,
@@ -30,19 +29,22 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// import { toast } from "react-toastify"; // Removido se não usar toast aqui dentro
-import { AvaliadorParaSelecao, WorkshopFrontend } from "./types";
+import { AvaliadorParaSelecao, IUser, WorkshopFrontend } from "./types";
 
 export interface ScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workshop: WorkshopFrontend | null;
-  selectedDate: Date | undefined; // Este Date conterá dia, mês, ano, hora e minuto
+  selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
   selectedProfessorId: string;
   setSelectedProfessorId: (id: string) => void;
   avaliadores: AvaliadorParaSelecao[];
   onSave: () => void;
+  // Props for optional participants
+  allUsersForSelection: IUser[]; 
+  selectedOptionalParticipants: IUser[];
+  onSelectedOptionalParticipantsChange: React.Dispatch<React.SetStateAction<IUser[]>>; // Or (users: IUser[]) => void if you prefer
 }
 
 const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
@@ -55,46 +57,40 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   setSelectedProfessorId,
   avaliadores,
   onSave,
+  allUsersForSelection, // New prop
+  selectedOptionalParticipants, // New prop
+  onSelectedOptionalParticipantsChange, // New prop
 }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
-  const minutes = Array.from({ length: 60 / 5 }, (_, i) => (i * 5).toString().padStart(2, '0')); // 00, 05 ... 55
+  const minutes = Array.from({ length: 60 / 5 }, (_, i) => (i * 5).toString().padStart(2, '0'));
 
-  // Chamado quando um dia é selecionado no Calendário
   const handleDaySelect = (day: Date | undefined) => {
     if (!day) {
-      setSelectedDate(undefined); // Limpa a data e hora
+      setSelectedDate(undefined);
       return;
     }
-    // Pega o dia, mês, ano do calendário
-    // Mantém a hora e minuto de selectedDate (se já definidos), ou usa um padrão.
-    const currentHour = selectedDate && isValid(selectedDate) ? getHours(selectedDate) : 9; // Padrão 9h
-    const currentMinute = selectedDate && isValid(selectedDate) ? getMinutes(selectedDate) : 0; // Padrão :00
+    const currentHour = selectedDate && isValid(selectedDate) ? getHours(selectedDate) : 9;
+    const currentMinute = selectedDate && isValid(selectedDate) ? getMinutes(selectedDate) : 0;
 
-    let newFullDate = setHours(startOfDay(day), currentHour); // startOfDay para garantir que a hora do 'day' não interfira
+    let newFullDate = setHours(startOfDay(day), currentHour);
     newFullDate = setMinutes(newFullDate, currentMinute);
     setSelectedDate(newFullDate);
   };
 
-  // Chamado quando a hora ou minuto é alterado nos Selects
   const handleTimeChange = (part: "hour" | "minute", value: string) => {
     const numericValue = parseInt(value, 10);
     if (isNaN(numericValue)) return;
 
-    // Usa a data selecionada no calendário como base, ou o dia atual se nenhuma data foi escolhida ainda.
     const baseDate = selectedDate ? new Date(selectedDate.getTime()) : new Date();
-    // Se não havia data selecionada e o usuário mexeu na hora/minuto,
-    // é importante que baseDate seja um dia válido (ex: hoje ao meio-dia).
-    // A lógica abaixo atualiza ou define a parte da hora/minuto.
-
     let newFullDate: Date;
     if (part === "hour") {
       newFullDate = setHours(baseDate, numericValue);
-      if (!selectedDate) { // Se era a primeira interação e foi pela hora, zera os minutos
+      if (!selectedDate) {
         newFullDate = setMinutes(newFullDate, 0);
       }
-    } else { // part === "minute"
+    } else {
       newFullDate = setMinutes(baseDate, numericValue);
-      if (!selectedDate) { // Se era a primeira interação e foi pelo minuto, usa a hora atual
+      if (!selectedDate) {
          newFullDate = setHours(newFullDate, getHours(new Date()));
       }
     }
@@ -107,6 +103,18 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
 
   const selectedHourValue = selectedDate && isValid(selectedDate) ? getHours(selectedDate).toString().padStart(2, '0') : "";
   const selectedMinuteValue = selectedDate && isValid(selectedDate) ? getMinutes(selectedDate).toString().padStart(2, '0') : "";
+
+  // Handler for selecting/deselecting an optional participant
+  const handleOptionalParticipantToggle = (participant: IUser) => {
+    onSelectedOptionalParticipantsChange(prevSelected => {
+      const isAlreadySelected = prevSelected.find(p => p.id === participant.id);
+      if (isAlreadySelected) {
+        return prevSelected.filter(p => p.id !== participant.id);
+      } else {
+        return [...prevSelected, participant];
+      }
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,11 +148,11 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
               <PopoverContent className="w-auto p-0 z-[1001]" align="start">
                 <Calendar
                   mode="single"
-                  selected={selectedDate} // Passa o selectedDate completo
-                  onSelect={handleDaySelect} // Atualiza selectedDate mantendo/definindo hora
+                  selected={selectedDate}
+                  onSelect={handleDaySelect}
                   initialFocus
                   locale={ptBR}
-                  disabled={(date) => date < startOfDay(new Date())} // Desabilita dias passados
+                  disabled={(date) => date < startOfDay(new Date())}
                 />
               </PopoverContent>
             </Popover>
@@ -188,7 +196,7 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
             </div>
           </div>
 
-          {/* Seletor de Professor (sem alterações na estrutura) */}
+          {/* Seletor de Professor (Avaliador) */}
           <div className="grid gap-2">
             <Label htmlFor="professor-select">Professor Avaliador</Label>
             <Select
@@ -207,6 +215,54 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Seletor de Participantes Opcionais (Multi-select) */}
+          <div className="grid gap-2">
+            <Label htmlFor="participant-select-trigger">Participantes Opcionais</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="participant-select-trigger"
+                  variant="outline"
+                  className="w-full justify-start font-normal"
+                >
+                  {selectedOptionalParticipants.length > 0
+                    ? `${selectedOptionalParticipants.length} selecionado(s): ${selectedOptionalParticipants.map(p=>p.name?.split(' ')[0] || p.email).slice(0,2).join(', ')}${selectedOptionalParticipants.length > 2 ? '...' : ''}`
+                    : "Selecione participantes"}
+                  <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                 {/* You can add a search/filter input here if needed for long lists */}
+                <div className="max-h-60 overflow-y-auto p-1">
+                  {allUsersForSelection && allUsersForSelection.length > 0 ? (
+                    allUsersForSelection.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center space-x-2 p-2 hover:bg-accent rounded-md cursor-pointer"
+                        onClick={() => handleOptionalParticipantToggle(user)} // Make whole item clickable
+                      >
+                        <Checkbox
+                          id={`opt-participant-${user.id}`}
+                          checked={selectedOptionalParticipants.some(p => p.id === user.id)}
+                          onCheckedChange={() => handleOptionalParticipantToggle(user)} // Keep individual checkbox action too
+                        />
+                        <Label
+                          htmlFor={`opt-participant-${user.id}`}
+                          className="font-normal flex-1 cursor-pointer"
+                        >
+                          {user.name || user.email || "Usuário sem nome"}
+                        </Label>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="p-2 text-sm text-muted-foreground text-center">Nenhum usuário disponível.</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -214,8 +270,8 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
           </Button>
           <Button
             onClick={onSave}
-            className="bg-purple-gradient"
-            disabled={!selectedDate || !isValid(selectedDate) || !selectedProfessorId} // Salvar só se data válida e professor selecionado
+            className="bg-purple-gradient" // Ensure this class is defined in your CSS
+            disabled={!selectedDate || !isValid(selectedDate) || !selectedProfessorId}
           >
             Agendar
           </Button>

@@ -2,14 +2,15 @@
 
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
-import EstruturaDeConteudos from '@/components/devolutivas/estruturadeconteudo'; 
-import ScheduleDialog from '@/components/devolutivas/scheduledialog';         
+import EstruturaDeConteudos from '@/components/devolutivas/estruturadeconteudo';
+import ScheduleDialog from '@/components/devolutivas/scheduledialog';
 import {
   AvaliadorParaSelecao,
   DevolutivaAgendamentoFrontend,
   FormacaoFrontend,
+  IUser,
   RawCapacitacao,
   RawDevolutivaAgendamento,
   RawFormacao,
@@ -22,6 +23,7 @@ import { agendarNovaDevolutiva } from '../actions/agendarNovaDevolutiva';
 import { createTeamsMeeting } from '../actions/createTeamsMeeting';
 import { getAllFormacaoComAgendamentos } from '../actions/formacao/getAllFormacaoComAgendamentos';
 import { getAvaliadores } from '../actions/getAvaliadores';
+import { getUsers } from '../actions/getUsers';
 import { updateDevolutivaAgendada } from '../actions/updateDevolutivaAgendada';
 
 
@@ -34,13 +36,15 @@ const Devolutivas: React.FC = () => {
   const [selectedProfessorId, setSelectedProfessorId] = useState<string>("");
   const [currentWorkshop, setCurrentWorkshop] = useState<WorkshopFrontend | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
-  const [isUploadOpen, setIsUploadOpen] = useState(false); // Adicionado para controlar o UploadDialog
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [fileSelected, setFileSelected] = useState<File | null>(null);
   const [editingDevolutivaId, setEditingDevolutivaId] = useState<string | null>(null);
   const [selectedAgendamentoIdForUpload, setSelectedAgendamentoIdForUpload] = useState<string>("");
-
-  // const [currentDevolutivaId, setCurrentDevolutivaId] = useState<string | null>(null); // Se necessário para upload
+  
+  // Renamed state for all users and added state for selected optional participants
+  const [allAvailableUsers, setAllAvailableUsers] = useState<IUser[]>([]); 
+  const [selectedOptionalParticipants, setSelectedOptionalParticipants] = useState<IUser[]>([]);
 
   const { data: session } = useSession();
   const idDoUsuarioLogado = session?.user?.id;
@@ -48,7 +52,7 @@ const Devolutivas: React.FC = () => {
   const nomeDoUsuarioLogado = session?.user?.name;
 
   const parseFetchedFormacoes = (data: RawFormacao[]): FormacaoFrontend[] => {
-    return data.map((f:RawFormacao) => ({
+    return data.map((f: RawFormacao) => ({
       ...f,
       capacitacoes: f.capacitacoes.map((c: RawCapacitacao) => ({
         ...c,
@@ -66,13 +70,14 @@ const Devolutivas: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [formacoesData, avaliadoresData] = await Promise.all([
+      const [formacoesData, avaliadoresData, usersData] = await Promise.all([
         getAllFormacaoComAgendamentos(),
         getAvaliadores(),
+        getUsers(),
       ]);
-      console.log("DADOS BRUTOS DO BACKEND (formacoesData):" ,formacoesData);
       setFormacoes(parseFetchedFormacoes(formacoesData as RawFormacao[]));
       setAvaliadores(avaliadoresData as AvaliadorParaSelecao[]);
+      setAllAvailableUsers(usersData as IUser[]); // Populate the new state for all users
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       toast.error("Falha ao carregar dados da página.");
@@ -95,18 +100,18 @@ const Devolutivas: React.FC = () => {
       : undefined;
 
     if (agendamentoMaisRecente) {
-        return {
-            temAgendamento: true,
-            agendamento: agendamentoMaisRecente,
-            podeAgendar: false,
-            statusExibicao: 'agendada',
-            dataExibicao: agendamentoMaisRecente.dataAgendada,
-        };
+      return {
+        temAgendamento: true,
+        agendamento: agendamentoMaisRecente,
+        podeAgendar: false, 
+        statusExibicao: 'agendada',
+        dataExibicao: agendamentoMaisRecente.dataAgendada,
+      };
     }
     return {
       temAgendamento: false,
       agendamento: undefined,
-      podeAgendar: true, 
+      podeAgendar: true,
       statusExibicao: 'nenhum',
       dataExibicao: undefined,
     };
@@ -127,14 +132,18 @@ const Devolutivas: React.FC = () => {
   const handleScheduleDevolutiva = (workshop: WorkshopFrontend) => {
     setCurrentWorkshop(workshop);
     const infoAgendamento = getAgendamentoInfoParaWorkshop(workshop);
-    if(infoAgendamento.temAgendamento && infoAgendamento.agendamento){
-    setSelectedDate(new Date(infoAgendamento.agendamento.dataAgendada)); // Certifique-se que é um objeto Date
-    setSelectedProfessorId(infoAgendamento.agendamento.avaliadorId);
-    setEditingDevolutivaId(infoAgendamento.agendamento.id);
-    }else {
+    if (infoAgendamento.temAgendamento && infoAgendamento.agendamento) {
+      setSelectedDate(new Date(infoAgendamento.agendamento.dataAgendada));
+      setSelectedProfessorId(infoAgendamento.agendamento.avaliadorId);
+      setEditingDevolutivaId(infoAgendamento.agendamento.id);
+      // TODO: If editing, you might want to load existing optional participants here
+      // For now, we reset it similar to new scheduling.
+      setSelectedOptionalParticipants([]); 
+    } else {
       setSelectedDate(undefined);
       setSelectedProfessorId("");
       setEditingDevolutivaId(null);
+      setSelectedOptionalParticipants([]); // Reset for new schedule
     }
     setIsScheduleOpen(true);
   };
@@ -142,14 +151,14 @@ const Devolutivas: React.FC = () => {
   const handleUploadDevolutiva = (workshop: WorkshopFrontend) => {
     const infoAgendamento = getAgendamentoInfoParaWorkshop(workshop);
 
-    if (infoAgendamento.temAgendamento && infoAgendamento.agendamento) { 
-        setCurrentWorkshop(workshop); 
-        setSelectedAgendamentoIdForUpload(infoAgendamento.agendamento.id); 
-        setIsUploadOpen(true);
-        setFileSelected(null); 
+    if (infoAgendamento.temAgendamento && infoAgendamento.agendamento) {
+      setCurrentWorkshop(workshop);
+      setSelectedAgendamentoIdForUpload(infoAgendamento.agendamento.id);
+      setIsUploadOpen(true);
+      setFileSelected(null);
     } else {
-        toast.warn("Agende uma devolutiva primeiro para este workshop antes de enviar um arquivo.");
-        setSelectedAgendamentoIdForUpload(""); 
+      toast.warn("Agende uma devolutiva primeiro para este workshop antes de enviar um arquivo.");
+      setSelectedAgendamentoIdForUpload("");
     }
   };
 
@@ -158,14 +167,12 @@ const Devolutivas: React.FC = () => {
       toast.error("Workshop, data, professor ou usuário não autenticado são inválidos.");
       return;
     }
-    
+
     let operacaoBemSucedida = false;
     let devolutivaAgendadaId: string | undefined;
 
-
     try {
       if (editingDevolutivaId) {
-        // Atualizar agendamento existente
         const devolutivaAtualizada = await updateDevolutivaAgendada({
           devolutivaAgendamentoId: editingDevolutivaId,
           dataAgendada: selectedDate,
@@ -175,7 +182,6 @@ const Devolutivas: React.FC = () => {
         toast.success("Devolutiva reagendada com sucesso!");
         operacaoBemSucedida = true;
       } else {
-        // Criar novo agendamento
         const novaDevolutiva = await agendarNovaDevolutiva({
           workshopId: currentWorkshop.id,
           avaliadorId: selectedProfessorId,
@@ -188,25 +194,20 @@ const Devolutivas: React.FC = () => {
 
         if (operacaoBemSucedida && devolutivaAgendadaId) {
           const avaliadorSelecionado = avaliadores.find(a => a.id === selectedProfessorId);
-  
+
           if (!avaliadorSelecionado || !avaliadorSelecionado.email) {
             toast.warn("Email do avaliador não encontrado. Reunião do Teams não foi criada.");
           } else if (!emailDoUsuarioLogado) {
             toast.warn("Email do aluno (usuário logado) não encontrado. Reunião do Teams não foi criada.");
           } else {
-            const duracaoReuniaoHoras = 1; // Exemplo: reunião de 1 hora
-            const startTime = selectedDate; // selectedDate já é um objeto Date
+            const duracaoReuniaoHoras = 1;
+            const startTime = selectedDate;
             const endTime = new Date(startTime.getTime() + duracaoReuniaoHoras * 60 * 60 * 1000);
-  
-            // Formate para ISO string UTC para evitar problemas de fuso com o Graph API
-            // O Graph geralmente lida melhor com UTC e depois aplica o fuso especificado
+
             const startTimeISO = startTime.toISOString();
             const endTimeISO = endTime.toISOString();
-  
-            // Obter fuso horário do navegador do usuário pode ser uma opção,
-            // mas o fuso do evento será definido pelo servidor ou um padrão
             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
-  
+
             const attendees = [
               {
                 emailAddress: { address: avaliadorSelecionado.email, name: avaliadorSelecionado.name || avaliadorSelecionado.email },
@@ -214,34 +215,45 @@ const Devolutivas: React.FC = () => {
               },
               {
                 emailAddress: { address: emailDoUsuarioLogado, name: nomeDoUsuarioLogado || emailDoUsuarioLogado },
-                type: "required" as const, // O aluno (organizador) também é um participante
+                type: "required" as const,
               },
+              // Add selected optional participants
+              ...selectedOptionalParticipants.map(user => {
+                if (!user.email) {
+                  console.warn(`Participante opcional ${user.name || user.id} não possui e-mail e será ignorado.`);
+                  return null; 
+                }
+                return {
+                  emailAddress: { address: user.email, name: user.name || user.email },
+                  type: "optional" as const,
+                };
+              }).filter(Boolean) as { emailAddress: { address: string; name: string; }; type: "optional" | "required"; }[], // Filter out nulls and assert type
             ];
-  
+
             toast.info("Agendando reunião no Microsoft Teams...");
             const teamsResponse = await createTeamsMeeting({
               subject: `Devolutiva: ${currentWorkshop.nome} com ${avaliadorSelecionado.name || 'Avaliador'}`,
               startTimeISO: startTimeISO,
               endTimeISO: endTimeISO,
               attendees: attendees,
-              timeZone: userTimeZone, // Ou um fuso padrão como "America/Sao_Paulo"
+              timeZone: userTimeZone,
               bodyContent: `Esta é uma reunião de devolutiva para o workshop "${currentWorkshop.nome}", agendada através da plataforma.`,
             });
-  
+
             if (teamsResponse.errorMessage) {
               toast.error(`Falha ao criar reunião no Teams: ${teamsResponse.errorMessage}`);
             } else {
-              toast.success(`Reunião no Teams criada! 'Verifique seu calendário.'}`);
+              toast.success(`Reunião no Teams criada! Verifique seu calendário.`);
             }
           }
         }
       }
       setIsScheduleOpen(false);
-      setEditingDevolutivaId(null); // Limpa o ID de edição após salvar
-      fetchData(); // Recarrega os dados para refletir a mudança
-    } catch (error) { // Especificar 'any' ou um tipo de erro mais específico
-      toast.error("Falha ao salvar agendamento da devolutiva.");
+      setEditingDevolutivaId(null);
+      fetchData(); 
+    } catch (error) { 
       console.error("Erro ao salvar agendamento:", error);
+      toast.error("Erro ao salvar agendamento. Verifique o console para mais detalhes.");
     }
   };
 
@@ -260,7 +272,7 @@ const Devolutivas: React.FC = () => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true); // Mantenha true enquanto arrasta sobre
+    setIsDragging(true);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -308,19 +320,23 @@ const Devolutivas: React.FC = () => {
       <ScheduleDialog
         open={isScheduleOpen}
         onOpenChange={setIsScheduleOpen}
-        workshop={currentWorkshop} // WorkshopFrontend | null
+        workshop={currentWorkshop}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        selectedProfessorId={selectedProfessorId} // Passando o ID
-        setSelectedProfessorId={setSelectedProfessorId} // Passando a função de set para o ID
-        avaliadores={avaliadores} 
+        selectedProfessorId={selectedProfessorId}
+        setSelectedProfessorId={setSelectedProfessorId}
+        avaliadores={avaliadores}
         onSave={saveSchedule}
+        // Pass props for optional participants
+        allUsersForSelection={allAvailableUsers} 
+        selectedOptionalParticipants={selectedOptionalParticipants}
+        onSelectedOptionalParticipantsChange={setSelectedOptionalParticipants}
       />
       <UploadDialog
         open={isUploadOpen}
         onOpenChange={setIsUploadOpen}
-        workshop={currentWorkshop} // WorkshopFrontend | null
-        alunoId={idDoUsuarioLogado || ""} // ID do aluno logado
+        workshop={currentWorkshop}
+        alunoId={idDoUsuarioLogado || ""}
         isDragging={isDragging}
         devolutivaAgendamentoId={selectedAgendamentoIdForUpload}
         onDragEnter={handleDragEnter}

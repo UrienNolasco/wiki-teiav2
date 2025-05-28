@@ -1,6 +1,6 @@
 // Supostamente em um arquivo como src/types/index.ts ou similar
 
-import { StatusDevolutiva, TipoDevolutiva } from "@prisma/client";
+import { StatusDevolutiva, TipoDevolutiva, TipoUsuario } from "@prisma/client";
 
 /**
  * Informações básicas do usuário, frequentemente usadas para exibição.
@@ -198,4 +198,13 @@ export interface DevolutivaParaAvaliacao {
   status: StatusDevolutiva;
   dataAgendada: Date;
   devolutivaId: string; // ID original da devolutiva
+}
+
+export interface IUser {
+  id: string;
+  name?: string | null;
+  email: string;
+  image?: string | null;
+  tipo: TipoUsuario | null;
+  
 }
