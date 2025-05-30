@@ -1,12 +1,12 @@
+import { CheckCircle, Clock,PlayCircle } from "lucide-react"; // Ícones
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
-import { CheckCircle, PlayCircle, Clock, ExternalLink } from "lucide-react"; // Ícones
 
 import { getWorkshopDetails } from "@/app/actions/getworkshop"; // Action ajustada anteriormente
-import { authOptions } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter,CardHeader, CardTitle } from "@/components/ui/card";
+import { authOptions } from "@/lib/auth";
 
 export const revalidate = 0;
 

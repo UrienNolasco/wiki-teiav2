@@ -3,8 +3,8 @@
 import { BookOpen, ChevronRight, Clock, Play } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react"; // Importar useSession
+import { useEffect, useState } from "react";
 
 import { getWorkshopDetails } from "@/app/actions/getworkshop"; // Alterado para getWorkshopDetails
 import { useLastWorkshopStore } from "@/stores/progressStore";

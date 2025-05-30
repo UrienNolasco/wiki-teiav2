@@ -1,5 +1,6 @@
-import FormacaoServer from "@/components/formacao/formacaoserver"; // Verifique se o caminho está correto após a refatoração do FormacaoServer
 import { Suspense } from "react";
+
+import FormacaoServer from "@/components/formacao/formacaoserver"; // Verifique se o caminho está correto após a refatoração do FormacaoServer
 
 export const revalidate = 0; // Ou outra estratégia de revalidação se necessário
 
