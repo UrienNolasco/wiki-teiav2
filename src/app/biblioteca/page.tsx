@@ -32,11 +32,6 @@ const Biblioteca = async () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {formacoes.map((formacao) => {
-          // Remove "Formação" do começo e transforma em lowercase
-          const nomeFormatado = formacao.nome
-            .replace(/^Formação\s+/i, "")
-            .toLowerCase();
-
           return (
             <Card
               key={formacao.id}
@@ -70,7 +65,7 @@ const Biblioteca = async () => {
                   asChild
                   className="w-full bg-purple-gradient hover:opacity-90"
                 >
-                  <Link href={`/formacao/${nomeFormatado}`}>
+                  <Link href={`/formacao/${formacao.nome}`}>
                     Acessar Formação <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

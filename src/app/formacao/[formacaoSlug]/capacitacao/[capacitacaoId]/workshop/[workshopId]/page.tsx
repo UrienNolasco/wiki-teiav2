@@ -1,5 +1,12 @@
-import { Suspense } from "react";
-// import { getworkshop } from "@/app/actions/getworkshop"; // Placeholder para a action
+import Link from "next/link";
+import { getServerSession } from "next-auth/next";
+import { CheckCircle, PlayCircle, Clock, ExternalLink } from "lucide-react"; // Ícones
+
+import { getWorkshopDetails } from "@/app/actions/getworkshop"; // Action ajustada anteriormente
+import { authOptions } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const revalidate = 0;
 
@@ -11,58 +18,106 @@ type WorkshopPageProps = {
   };
 };
 
-// Placeholder para os dados do workshop
-// interface WorkshopData {
-//   id: string;
-//   nome: string;
-//   link_video: string | null;
-//   // Outros campos relevantes do workshop
-// }
+// Componente interno para a lógica assíncrona e renderização
+async function WorkshopDetailsComponent({ formacaoSlug, capacitacaoId, workshopId }: WorkshopPageProps['params']) {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
 
-// Componente que buscará e renderizará os dados do workshop
-// async function WorkshopDetails({ workshopId }: { workshopId: string }) {
-//   // const workshop: WorkshopData | null = await getworkshop(workshopId); // Chamar a action quando ela estiver pronta/adaptada
+  if (!userId) {
+    return <p className="text-red-500">Usuário não autenticado. Faça login para ver este workshop.</p>;
+  }
 
-//   // if (!workshop) {
-//   //   return <div>Workshop não encontrado.</div>;
-//   // }
+  const workshop = await getWorkshopDetails({ workshopId, userId });
 
-//   // return (
-//   //   <div>
-//   //     <h1>{workshop.nome}</h1>
-//   //     {workshop.link_video && (
-//   //       <video controls src={workshop.link_video}>
-//   //         Seu navegador não suporta o elemento de vídeo.
-//   //       </video>
-//   //     )}
-//   //     {/* Outros componentes e informações do workshop aqui */}
-//   //   </div>
-//   // );
+  if (!workshop) {
+    return <p className="text-red-500">Workshop não encontrado ou erro ao carregar dados.</p>;
+  }
 
-//   // Conteúdo temporário:
-//   return (
-//     <div>
-//       <h1>Detalhes do Workshop (ID: {workshopId})</h1>
-//       <p>Renderização do vídeo e outros conteúdos do workshop virão aqui.</p>
-//     </div>
-//   );
-// }
-
-export default function WorkshopPage({ params }: WorkshopPageProps) {
-  const { formacaoSlug, capacitacaoId, workshopId } = params;
+  // workshop.nomeCapacitacao e workshop.nomeFormacao vêm da action getWorkshopDetails
+  const nomeCapacitacao = workshop.nomeCapacitacao;
+  const nomeFormacao = workshop.nomeFormacao;
+  const idCapacitacao = workshop.idCapacitacao;
 
   return (
-    <div className="container mx-auto animate-fade-in">
-      <div className="p-8 space-y-8">
-        {/* <Suspense fallback={<div>Carregando workshop...</div>}>
-          <WorkshopDetails workshopId={workshopId} />
-        </Suspense> */}
-        {/* Conteúdo temporário direto */}
-        <h1>Workshop ID: {workshopId}</h1>
-        <p>Capacitação ID: {capacitacaoId}</p>
-        <p>Formação Slug: {formacaoSlug}</p>
-        <p>O conteúdo específico deste workshop (vídeo, descrição, etc.) será carregado e exibido aqui assim que a busca de dados for implementada com a action `getworkshop`.</p>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold">{workshop.nome}</CardTitle>
+        <CardDescription>
+          Da capacitação: <Link href={`/formacao/${formacaoSlug}/capacitacao/${idCapacitacao}`} className="text-blue-500 hover:underline">{nomeCapacitacao}</Link>
+          <br />
+          Da formação: <Link href={`/formacao/${formacaoSlug}`} className="text-blue-500 hover:underline">{nomeFormacao}</Link>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {workshop.link_video ? (
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">Vídeo do Workshop</h2>
+            <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+              {/* Idealmente, usar um componente de player de vídeo mais robusto se disponível */}
+              {/* Mas um iframe ou tag video simples funciona para começar */}
+              {workshop.link_video.includes("youtube.com") || workshop.link_video.includes("youtu.be") ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={workshop.link_video.replace("watch?v=", "embed/")} // Exemplo de conversão para link de embed do YouTube
+                  title={workshop.nome}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="border-0"
+                ></iframe>
+              ) : (
+                <video controls src={workshop.link_video} className="w-full h-full bg-black">
+                  Seu navegador não suporta o elemento de vídeo.
+                  <a href={workshop.link_video} target="_blank" rel="noopener noreferrer">Assista o vídeo aqui</a>
+                </video>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted-foreground">Nenhum vídeo disponível para este workshop.</p>
+        )}
+
+        <div>
+          <h2 className="text-2xl font-semibold mb-2">Seu Progresso</h2>
+          {workshop.progresso?.truedone ? (
+            <Badge variant="default" className="bg-green-500 text-white text-lg p-2">
+              <CheckCircle className="mr-2 h-5 w-5" /> Concluído
+            </Badge>
+          ) : workshop.progresso?.startedAt ? (
+            <Badge variant="outline" className="border-yellow-500 text-yellow-600 text-lg p-2">
+              <PlayCircle className="mr-2 h-5 w-5" /> Em Andamento
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-lg p-2">
+              <Clock className="mr-2 h-5 w-5" /> Pendente
+            </Badge>
+          )}
+          {/* Adicionar mais detalhes do progresso se necessário, como datas */}
+        </div>
+
+        {/* Adicionar aqui outros conteúdos do workshop: descrição detalhada, materiais, etc. */}
+        {/* Exemplo:
+        <div>
+          <h2 className="text-2xl font-semibold mb-2">Descrição</h2>
+          <p>{workshop.descricao || "Nenhuma descrição disponível."}</p>
+        </div>
+        */}
+
+      </CardContent>
+      <CardFooter>
+        {/* Botões para marcar como concluído, ir para o próximo, etc., podem ser adicionados aqui */}
+        <Button variant="outline" onClick={() => window.history.back()}>Voltar para Capacitação</Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+
+export default function WorkshopPage({ params }: WorkshopPageProps) {
+  // Os params já são do tipo correto devido à tipagem da função
+  return (
+    <div className="container mx-auto animate-fade-in py-8">
+      <WorkshopDetailsComponent {...params} />
     </div>
   );
 }
