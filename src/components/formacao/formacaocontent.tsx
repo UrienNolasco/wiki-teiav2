@@ -33,25 +33,12 @@ export default function FormacaoContent({ formacao }: FormacaoContentProps) {
     totalWorkshops: number;
     completedWorkshops: number;
   }) => {
-    if (formacao.nome === "Formação ABAP") {
-      router.push("/formacao/abap/workshops");
-    } else if (formacao.nome === "Formação SD") {
-      // Determinar o slug baseado no nome da capacitação
-      let slug;
-      switch (capacitacao.nome) {
-        case "Capacitação de Negócios":
-          slug = "negocios";
-          break;
-        case "Capacitação de Configurações":
-          slug = "config";
-          break;
-        default:
-          slug = "";
-      }
-      router.push(`/formacao/sd/workshops/${slug}`);
-    } else if (formacao.nome === "Formação MM") {
-      router.push("/formacao/mm/workshops");
-    }
+    // Gerar formacaoSlug a partir de formacao.nome
+    const formacaoSlug = formacao.nome.toLowerCase().replace(/\s+/g, '-');
+    const capacitacaoId = capacitacao.id;
+
+    // Construir a nova URL e navegar
+    router.push(`/formacao/${formacaoSlug}/capacitacao/${capacitacaoId}`);
   };
 
   return (
