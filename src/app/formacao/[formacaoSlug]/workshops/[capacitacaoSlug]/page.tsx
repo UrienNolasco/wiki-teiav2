@@ -98,10 +98,6 @@ export default async function WorkshopsPage({ params }: WorkshopsPageProps) {
           <p className="text-muted-foreground mt-2">
             {formacao?.nome}
           </p>
-          {/* Debug temporário na UI */}
-          <p className="text-xs text-gray-500 mt-4">
-            Debug: {workshops.length} workshops encontrados
-          </p>
         </div>
         
         <div className="space-y-6">

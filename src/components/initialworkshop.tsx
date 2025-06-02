@@ -34,14 +34,12 @@ const InitialWorkshop = ({
   onWorkshopStarted
 }: InitialWorkshopProps) => {
   const handleConfirm = async () => {
-    onOpenChange(false);
-    onClose?.(false); // Não é cancelamento
     try {
       await startWorkshop({ usuarioId, workshopId });
       toast.success("Workshop iniciado com sucesso!");
       onWorkshopStarted?.();
       onOpenChange(false);
-      onClose?.(false);
+      onClose?.(false); // Não é cancelamento
     } catch (error) {
       console.error("Erro ao iniciar o workshop:", error);
       toast.error("Erro ao iniciar o workshop. Tente novamente mais tarde.");

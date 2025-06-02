@@ -93,6 +93,7 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
   };
 
   const handleDialogClose = (isCancel: boolean) => {
+    setIsDialogOpen(false); // Sempre fecha o dialog
     if (isCancel) {
       setIsCollapsed(true); // Só fecha o card se for cancelamento
     }
@@ -157,11 +158,7 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
       {isDialogOpen && (
         <InitialWorkshop
         open={isDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            handleDialogClose(false);
-          }
-        }}
+        onOpenChange={setIsDialogOpen}
         onClose={handleDialogClose}
         usuarioId={user.data?.user.id ?? ""}
         workshopId={workshop.id}
