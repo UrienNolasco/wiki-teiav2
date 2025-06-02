@@ -208,3 +208,21 @@ export interface IUser {
   tipo: TipoUsuario | null;
   
 }
+
+export type FormacaoWithProgresso = {
+  id: string;
+  nome: string;
+  capacitacoes: {
+    id: string;
+    nome: string;
+    totalWorkshops: number;
+    completedWorkshops: number;
+  }[];
+};
+
+export type CapacitacaoWithProgresso = {
+  id: string;
+  nome: string;
+  totalWorkshops: number;
+  completedWorkshops: number;
+};

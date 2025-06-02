@@ -1,3 +1,4 @@
+// app/biblioteca/page.tsx
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
+import { createSlug } from "@/lib/slug";
 
 import { getAllFormacao } from "../actions/formacao/getallformacao";
 
@@ -32,10 +34,7 @@ const Biblioteca = async () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {formacoes.map((formacao) => {
-          // Remove "Formação" do começo e transforma em lowercase
-          const nomeFormatado = formacao.nome
-            .replace(/^Formação\s+/i, "")
-            .toLowerCase();
+          const slug = createSlug(formacao.nome);
 
           return (
             <Card
@@ -61,8 +60,8 @@ const Biblioteca = async () => {
                   {formacao.descricao}
                 </CardDescription>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>N capacitações</span>
-                  <span>N workshops</span>
+                  <span>{formacao.totalCapacitacoes} capacitações</span>
+                  <span>{formacao.totalWorkshops} workshops</span>
                 </div>
               </CardContent>
               <CardFooter className="pt-0 mt-auto">
@@ -70,7 +69,7 @@ const Biblioteca = async () => {
                   asChild
                   className="w-full bg-purple-gradient hover:opacity-90"
                 >
-                  <Link href={`/formacao/${nomeFormatado}`}>
+                  <Link href={`/formacao/${slug}`}>
                     Acessar Formação <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
