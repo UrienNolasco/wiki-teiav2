@@ -21,6 +21,8 @@ interface InitialWorkshopProps {
   onClose?: (isCancel: boolean) => void;
   usuarioId: string; // Nova prop
   workshopId: string; // Nova prop
+  onWorkshopStarted?: () => void;
+  
 }
 
 const InitialWorkshop = ({
@@ -29,6 +31,7 @@ const InitialWorkshop = ({
   onClose,
   usuarioId, // Nova prop
   workshopId, // Nova prop
+  onWorkshopStarted
 }: InitialWorkshopProps) => {
   const handleConfirm = async () => {
     onOpenChange(false);
@@ -36,6 +39,7 @@ const InitialWorkshop = ({
     try {
       await startWorkshop({ usuarioId, workshopId });
       toast.success("Workshop iniciado com sucesso!");
+      onWorkshopStarted?.();
       onOpenChange(false);
       onClose?.(false);
     } catch (error) {

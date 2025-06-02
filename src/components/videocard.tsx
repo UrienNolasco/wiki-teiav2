@@ -43,6 +43,7 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
   const [averageRating, setAverageRating] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [workshopStartedAt, setWorkshopStartedAt] = useState(workshop.startedAt);
 
   useEffect(() => {
     setLastWorkshop(workshop.id);
@@ -85,14 +86,10 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
   }, [isCollapsed, workshop.id, setLastWorkshop]);
 
   const handleToggleCollapse = () => {
-    setIsCollapsed((prev) => {
-      const newState = !prev;
-      // Verifica se está expandindo E se não tem startedAt
-      if (prev === true && newState === false && !workshop.startedAt) {
-        setIsDialogOpen(true);
-      }
-      return newState;
-    });
+    if (isCollapsed && !workshopStartedAt) {
+      setIsDialogOpen(true);
+    }
+    setIsCollapsed(!isCollapsed);
   };
 
   const handleDialogClose = (isCancel: boolean) => {
@@ -159,12 +156,17 @@ export const VideoCard = ({ workshop }: { workshop: Workshop }) => {
 
       {isDialogOpen && (
         <InitialWorkshop
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onClose={handleDialogClose}
-          usuarioId={user.data?.user.id ?? ""}
-          workshopId={workshop.id}
-        />
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleDialogClose(false);
+          }
+        }}
+        onClose={handleDialogClose}
+        usuarioId={user.data?.user.id ?? ""}
+        workshopId={workshop.id}
+        onWorkshopStarted={() => setWorkshopStartedAt(new Date())} // Nova prop
+      />
       )}
 
       <motion.div

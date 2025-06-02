@@ -17,12 +17,8 @@ interface WorkshopsPageProps {
 }
 
 export default async function WorkshopsPage({ params }: WorkshopsPageProps) {
-  console.log("=== DEBUG WORKSHOPS PAGE ===");
-  console.log("Params recebidos:", params);
-  
   const session = await getServerSession(authOptions);
   const userId = session?.user.id;
-  console.log("User ID:", userId);
 
   if (!userId) {
     return <p>Usuário não autenticado.</p>;
@@ -30,7 +26,6 @@ export default async function WorkshopsPage({ params }: WorkshopsPageProps) {
 
   // Buscar a formação pelo slug
   const formacaoName = getFormacaoNameFromSlug(params.formacaoSlug);
-  console.log("Formação name from slug:", formacaoName);
   
   // Primeiro, vamos buscar a capacitação diretamente
   const capacitacoes = await db.capacitacao.findMany({
@@ -44,19 +39,13 @@ export default async function WorkshopsPage({ params }: WorkshopsPageProps) {
     }
   });
   
-  console.log("Capacitações encontradas:", capacitacoes.length);
-  console.log("Capacitações:", capacitacoes.map(c => ({ id: c.id, nome: c.nome })));
-
   // Encontrar a capacitação específica pelo slug
   const capacitacao = capacitacoes.find(cap => {
     const capSlug = createSlug(cap.nome);
-    console.log(`Comparando: ${capSlug} === ${params.capacitacaoSlug}`);
     return capSlug === params.capacitacaoSlug;
   });
-  console.log("Capacitação encontrada:", capacitacao);
 
   if (!capacitacao) {
-    console.log("ERRO: Capacitação não encontrada!");
     notFound();
   }
 
