@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const Contato = () => {
   return (
@@ -33,6 +34,7 @@ const Contato = () => {
           <div>
             <h2 className="uppercase font-bold text-lg mb-4">Redes sociais</h2>
             <div className="flex gap-6">
+              <Link href={"https://www.facebook.com/teiaconnect"}>
               <Image
                 src="/facebook-176-svgrepo-com.svg"
                 alt="Facebook"
@@ -40,6 +42,8 @@ const Contato = () => {
                 height={32}
                 className="hover:opacity-75 transition-opacity"
               />
+              </Link>
+              <Link href={"https://www.instagram.com/teia.connect/"}>
               <Image
                 src="/instagram-svgrepo-com.svg"
                 alt="Instagram"
@@ -47,6 +51,9 @@ const Contato = () => {
                 height={32}
                 className="hover:opacity-75 transition-opacity"
               />
+              </Link>
+
+              <Link href={"https://www.linkedin.com/company/teia-connect/"}>
               <Image
                 src="/linkedin-svgrepo-com.svg"
                 alt="LinkedIn"
@@ -54,6 +61,7 @@ const Contato = () => {
                 height={38}
                 className="hover:opacity-75 transition-opacity"
               />
+              </Link>
             </div>
           </div>
         </div>
