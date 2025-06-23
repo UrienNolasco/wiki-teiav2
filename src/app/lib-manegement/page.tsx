@@ -234,6 +234,22 @@ const LibManegement = () => {
       toast.error("Preencha o nome da formação");
       return;
     }
+    if (!image_link.trim()){
+      toast.error("Preencha o link da imagem");
+      return;
+    }
+
+    try {
+      const url = new URL(image_link);
+      if (url.hostname !== "i.imgur.com") {
+        toast.warning("A imagem deve ser hospedada no Imgur (i.imgur.com)");
+        return;
+      }
+    } catch (error) {
+      toast.warning("A imagem deve ser hospedada no Imgur (i.imgur.com)");
+      console.error("Erro de validação de URL:", error);
+      return;
+    }
   
     await addFormacao({ nome, descricao, image_link });
   
