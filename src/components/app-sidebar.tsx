@@ -162,7 +162,7 @@ export function AppSidebar() {
                     alt={data.data?.user.name ?? "User"}
                   />
                     </Avatar>
-                  <div className="flex flex-col items-start truncate">
+                  <div className="flex flex-col items-start truncate min-w-0">
                     <span className="text-sm font-medium">{data.data?.user.name}</span>
                     <span className="text-xs text-muted-foreground">{data.data?.user.email}</span>
                   </div>
