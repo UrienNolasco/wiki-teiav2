@@ -154,7 +154,7 @@ export function AppSidebar() {
         <div className="mt-auto p-3 border-t">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start p-2 h-auto">
+              <Button variant="ghost" className="w-full justify-start p-2 h-auto truncate">
                 <div className="flex items-center gap-2">
                     <Avatar className="h-9 w-9">
                     <AvatarImage className="object-fill"
@@ -162,9 +162,9 @@ export function AppSidebar() {
                     alt={data.data?.user.name ?? "User"}
                   />
                     </Avatar>
-                  <div className="flex flex-col items-start truncate min-w-0">
+                  <div className="flex flex-col items-start truncate min-w-0 max-w-[200]">
                     <span className="text-sm font-medium">{data.data?.user.name}</span>
-                    <span className="text-xs text-muted-foreground">{data.data?.user.email}</span>
+                    <span className="text-xs text-muted-foreground truncate min-w-0">{data.data?.user.email}</span>
                   </div>
                 </div>
               </Button>
