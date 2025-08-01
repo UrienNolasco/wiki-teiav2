@@ -5,42 +5,39 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { getWorkshop } from "@/app/actions/getworkshop";
+import { getWorkshopWithSlug } from "@/app/actions/workshop/getworkshopwithslug";
 import { useLastWorkshopStore } from "@/stores/progressStore";
 
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 
 
-
-const routeMap: { [key: string]: string } = {
-  "Capacitação de Negócios": "/formacao/sd/workshops/negocios",
-  "Capacitação de Configurações": "/formacao/sd/workshops/config",
-  "Capacitação ABAP": "/formacao/abap/workshops",
-};
-
 export function ContinueWatching() {
   const { lastWorkshopId, lastViewedAt } = useLastWorkshopStore();
   const router = useRouter();
   const [workshopName, setWorkshopName] = useState<string | null>(null);
   const [capacitacao, setCapacitacao] = useState<string | null>(null);
+  const [navigationPath, setNavigationPath] = useState<string | null>(null);
 
-  useEffect(() => {
+
+useEffect(() => {
     if (lastWorkshopId) {
-      getWorkshop({ workshopId: lastWorkshopId }).then((data) => {
+      getWorkshopWithSlug({ workshopId: lastWorkshopId }).then((data) => {
         if (data) {
           setWorkshopName(data.nome);
           setCapacitacao(data.capacitacao);
+          setNavigationPath(data.navigationPath); 
         }
       });
     }
   }, [lastWorkshopId]);
 
   const handleAcessarConteudo = () => {
-    const route = capacitacao
-      ? routeMap[capacitacao] || "/formacao"
-      : "/biblioteca";
-    router.push(route);
+    if (navigationPath) {
+      router.push(navigationPath);
+    } else {
+      router.push("/biblioteca"); 
+    }
   };
 
   return (
@@ -100,7 +97,7 @@ export function ContinueWatching() {
 
               <Button onClick={handleAcessarConteudo}>
                 <Play className="h-4 w-4 mr-2" />
-                Continuar
+                Acessar ultimo conteúdo
               </Button>
             </div>
           ) : (
